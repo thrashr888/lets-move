@@ -15,16 +15,33 @@ body {
 }
 
 .Player {
-  /*background-color: pink;
-  border: 2px solid black;
-  border-radius: 5px;*/
-  color: black;
-  content: "🦆";
   display: block;
   font-size: 50px;
   margin: 0;
   padding: 0;
-  position: relative;
+  position: absolute;
+  transition-property: left, top;
+  transition-duration: 0.25s;
+  transition-delay: 0s;
+}
+
+.Baddie {
+  display: block;
+  font-size: 50px;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  transition-property: left, top;
+  transition-duration: 0.25s;
+  transition-delay: 0s;
+}
+
+.Wall {
+  display: block;
+  font-size: 50px;
+  margin: 0;
+  padding: 0;
+  position: absolute;
 }
 
 .Stats {
@@ -36,5 +53,45 @@ body {
   font-size: 1.3rem;
   margin: 0;
   padding: 0.3em;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.Control {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: grey;
+  border: 2px solid black;
+  display: inline-block;
+}
+
+.Button {
+  color: black;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 25px;
+  height: 30px;
+  margin: 0.1em;
+  padding: 0;
   position: relative;
+  width: 40px;
+}
+
+.History {
+  padding: 0;
+  margin: 0;
+  vertical-align: bottom;
+}
+.History span {
+  margin: 0;
+  padding: 0;
+  width: 1px;
+  height: 1px;
+  background-color: red;
+  display: inline-block;
+  margin-right: 0.5px;
+  /*position: absolute;
+  bottom: 0;*/
 }
