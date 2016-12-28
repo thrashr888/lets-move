@@ -335,8 +335,7 @@ World.prototype.placeAll = function (search, entity) {
       let col = row[c];
       // console.log('>', r, c, col);
       if (col === search) {
-        console.log(search + ' FOUND', r, c, col);
-        // TODO: this call doesn't really work
+        console.log(this.map.named[search], 'FOUND', r, c, col);
         entities.push(new Game[entity](this, [c, r], c + ':' + r));
       }
     }
