@@ -5,12 +5,16 @@ body {
 }
 
 .World {
-  background-color: royalblue;
-  border-radius: 5px;
-  color: black;
   display: block;
-  margin: 0;
+  margin: 3px;
   padding: 0;
+}
+
+.WorldMap {
+  display: inline-block;
+  background-color: #8bc34a;
+  border-radius: 5px;
+  position: relative;
 }
 
 .Entity {
@@ -39,24 +43,28 @@ body {
 .Wall {
 }
 
+.UI {
+  width: 250px;
+}
+
 .Stats {
   background-color: black;
   border: 1px solid green;
   color: green;
-  display: block;
+  /*display: block;*/
   font-family: monospace;
   font-size: 1.3rem;
   margin: 0;
   padding: 0.3em;
-  position: absolute;
+  /*position: absolute;
   right: 0;
-  top: 0;
+  top: 0;*/
 }
 
 .Inventory {
-  position: absolute;
+  /*position: absolute;
   bottom: 50%;
-  right: 0;
+  right: 0;*/
   background-color: grey;
   border: 2px solid black;
   border-radius: 6px;
@@ -64,9 +72,9 @@ body {
 }
 
 .Control {
-  position: absolute;
+  /*position: absolute;
   bottom: 0;
-  right: 0;
+  right: 0;*/
   background-color: grey;
   border: 2px solid black;
   border-radius: 6px;

@@ -1,14 +1,16 @@
 
-import {style} from './helpers';
-import {Stats, Control, Inventory} from './UI';
+import {style, div} from './helpers';
+import {UI} from './UI';
 import Game from './Game';
 
 
 //
-// Map
+// WorldMap
 //
-var Map = function (world, level) {
-  this.maps = [
+var WorldMap = function (world, level) {
+  this.el = div(world.el, 'WorldMap');
+
+  this.fields = [
     [
       [1,1,1,1,1,1,1],
       [1,2,1,6,0,0,1],
@@ -44,7 +46,8 @@ var Map = function (world, level) {
     ],
   ];
   this.setLevel(level);
-  this.names = {
+
+  this.types = {
     0: 'Empty',
     1: 'Wall',
     2: 'Player',
@@ -62,22 +65,26 @@ var Map = function (world, level) {
     5: '⛩',
     6: '💰',
   };
+  this.iconsByType = {};
+  Object.keys(this.types).forEach((key) => {
+    this.iconsByType[this.types[key]] = this.icons[key];
+  });
 
-  this.namesMap = new Array(this.height);
+  this.typesMap = new Array(this.height);
   this.iconsMap = new Array(this.height);
-  this.map.forEach((row, r) => {
-    this.namesMap[r] = [];
+  this.field.forEach((row, r) => {
+    this.typesMap[r] = [];
     this.iconsMap[r] = [];
     row.forEach((col, c) => {
-      this.namesMap[r][c] = this.names[col];
+      this.typesMap[r][c] = this.types[col];
       this.iconsMap[r][c] = this.icons[col];
     });
   });
 }
-Map.prototype.setLevel = function (level) {
-  this.map = this.maps[level-1];
-  this.width = this.map[0].length;
-  this.height = this.map.length;
+WorldMap.prototype.setLevel = function (level) {
+  this.field = this.fields[level-1];
+  this.width = this.field[0].length;
+  this.height = this.field.length;
 }
 
 
@@ -85,41 +92,47 @@ Map.prototype.setLevel = function (level) {
 // World
 //
 var World = function (rootEl) {
-  this.el = rootEl;
-  this.el.className = 'World';
+  // element
+  this.el = div(rootEl, 'World');
+
+  // stats
   this.tickCount = 0;
   this.fps = 0;
   this.fpsLast = 0;
   this.fpsHistory = [];
   this.running = true;
 
+  // map
   this.level = 1;
-  this.map = new Map(this, this.level);
-  this.chunkSize = 25;
+  this.map = new WorldMap(this, this.level);
+  this.chunkSize = 35;
   this.size = [this.map.width * this.chunkSize, this.map.height * this.chunkSize];
-  style(this.el, {
-    width: this.size[0],
-    height: this.size[1],
+  style(this.map.el, {
+    width: this.size[0] + 1,
+    height: this.size[1] + 5,
   })
 
+  // entities
   this.placeAll();
   this.player = this.entities.find(e => e.type === 'Player');
-  this.control = new Control(this);
-  this.inventory = new Inventory(this);
-  this.stats = new Stats(this);
+  this.ui = new UI(this);
 
+  // handlers
   this.second.bind(this)();
   window.stop = this.stop.bind(this);
   window.start = this.start.bind(this);
 
-  console.log(this)
+  // debugging
+  console.log(this);
   // console.table(this.map.iconsMap);
 }
 World.prototype.getEntitiesByType = function (type) {
   return this.entities.filter(e => e.type === type);
 }
 World.prototype.getEntityByPos = function (pos) {
-  return this.entities.filter(e => e.type !== 'Player' && e.type !== 'Empty').find(e => e.pos[0] === pos[0] && e.pos[1] === pos[1]);
+  return this.entities
+    .filter(e => e.type !== 'Player' && e.type !== 'Empty')
+    .find(e => e.pos[0] === pos[0] && e.pos[1] === pos[1]);
 }
 World.prototype.second = function () {
   if (!this.running) {
@@ -140,7 +153,7 @@ World.prototype.tick = function () {
   this.tickCount = this.tickCount + 1;
   this.player.act();
   this.player.move();
-  this.stats.update();
+  this.ui.update();
   requestAnimationFrame(this.tick.bind(this));
 }
 World.prototype.stop = function () {
@@ -155,12 +168,18 @@ World.prototype.start = function () {
 }
 World.prototype.placeAll = function (search, entity) {
   this.entities = [];
-  return this.map.map.map((row, r) => {
+  return this.map.field.map((row, r) => {
     // console.log(r, row)
     return row.map((col, c) => {
       // console.log(c, col)
-      // console.log(this.map.names[col], 'FOUND', r, c);
-      let entity = new Game[this.map.names[col]](this, [c, r], c + ':' + r, this.map.icons[col]);
+      let type = this.map.types[col];
+      // console.log(type, 'FOUND', r, c);
+      let entity = new Game[type](
+          this,
+          [c, r],
+          [type, c, r].join(':'),
+          this.map.icons[col]
+        );
       this.entities.push(entity);
       return entity;
     });
@@ -175,9 +194,9 @@ World.prototype.removeEntity = function (name) {
   }
 }
 World.prototype.clearMap = function () {
-  this.el.innerHTML = '';
+  this.map.el.innerHTML = '';
   this.size = [this.map.width * this.chunkSize, this.map.height * this.chunkSize];
-  style(this.el, {
+  style(this.map.el, {
     width: this.size[0],
     height: this.size[1],
   })
@@ -208,6 +227,7 @@ World.prototype.exit = function () {
   this.level++;
   this.map.setLevel(this.level);
   this.clearMap();
+  this.entities = [];
   this.placeAll();
 }
 

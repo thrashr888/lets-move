@@ -5,9 +5,9 @@ import {style, event, div, span, br} from './helpers';
 //
 // Stats
 //
-var Stats = function (world) {
-  this.world = world;
-  this.el = div(world.el, 'Stats', '<b>loading...</b>');
+var Stats = function (ui) {
+  this.world = ui.world;
+  this.el = div(ui.el, 'Stats', '<b>loading...</b>');
 }
 Stats.prototype.update = function () {
   // console.log(this.world.player)
@@ -42,9 +42,9 @@ Stats.prototype.renderHistory = function () {
 //
 // Control
 //
-var Control = function (world) {
-  this.world = world;
-  this.el = div(world.el, 'Control');
+var Control = function (ui) {
+  this.world = ui.world;
+  this.el = div(ui.el, 'Control');
   this.buttons = [
     span(this.el, 'Button', '&nbsp;&nbsp;&nbsp;', null),
     event(span(this.el, 'Button Up', '🔼', null), 'click', this.clickDir.bind(this)('up')),
@@ -77,9 +77,9 @@ Control.prototype.clickDir = function (dir) {
 //
 // Inventory
 //
-var Inventory = function (world) {
-  this.world = world;
-  this.el = div(world.el, 'Inventory', 'Inventory:', {
+var Inventory = function (ui) {
+  this.world = ui.world;
+  this.el = div(ui.el, 'Inventory', 'Inventory:', {
     display: 'none',
   });
   this.buttons = [
@@ -102,4 +102,20 @@ Inventory.prototype.toggle = function () {
   }
 }
 
-module.exports = {Stats, Control, Inventory};
+
+//
+// UI
+//
+var UI = function (world) {
+  this.world = world;
+  this.el = div(world.el, 'UI');
+  this.inventory = new Inventory(this);
+  this.stats = new Stats(this);
+  this.control = new Control(this);
+}
+UI.prototype.update = function () {
+  this.stats.update();
+}
+
+
+module.exports = {UI, Stats, Control, Inventory};

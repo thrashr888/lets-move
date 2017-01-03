@@ -20,22 +20,28 @@ Game.Entity = function (world, pos, name, icon) {
 }
 Game.Entity.prototype.serialize = function () {
   return {
+    type: this.type,
     name: this.name,
     pos: this.pos,
     hp: this.hp,
+    gold: this.gold,
   }
 }
-Game.Entity.prototype.serialize = function () {
-  return {
-    name: this.name,
-    pos: this.pos,
-    hp: this.hp,
-  }
+Game.Entity.prototype.deserialize = function (world, data) {
+  let entity = new Game[data.type](
+      world,
+      data.pos,
+      data.name,
+      world.map.iconsByType[data.type]
+    );
+  entity.hp = data.hp;
+  entity.gold = data.gold;
+  return entity;
 }
 Game.Entity.prototype.createAndPos = function () {
   let left = (this.pos[0] * this.world.chunkSize);
   let top = (this.pos[1] * this.world.chunkSize);
-  this.el = div(this.world.el, 'Entity ' + this.type, this.icon, {
+  this.el = div(this.world.map.el, 'Entity ' + this.type, this.icon, {
     fontSize: this.size[0],
     width: this.size[0],
     height: this.size[0],
@@ -44,7 +50,7 @@ Game.Entity.prototype.createAndPos = function () {
   });
 }
 Game.Entity.prototype.create = function () {
-  this.el = div(this.world.el, 'Entity ' + this.type, this.icon, {
+  this.el = div(this.world.map.el, 'Entity ' + this.type, this.icon, {
     fontSize: this.size[0],
     width: this.size[0],
     height: this.size[0],
@@ -161,13 +167,14 @@ Game.Player.prototype.hit = function (entity) {
   // console.log(entity.hp);
 }
 Game.Player.prototype.win = function (entity) {
+  // TODO replace baddie with gold
   this.score += entity.gold;
   // console.log(entity.hp);
 }
 Game.Player.prototype.act = function () {
   this.acted = false;
   if (this.action === 'inventory') {
-    this.world.inventory.toggle();
+    this.world.ui.inventory.toggle();
     this.acted = true;
   } else if (this.action === 'engage') {
     let entity = this.world.findByDir(this.pos, this.oldDir);
