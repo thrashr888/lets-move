@@ -15,15 +15,17 @@ Stats.prototype.update = function () {
     // 'Tick:',
     // this.world.tickCount,
     // ';',
-    'Pos:',
-    this.world.player.oldPos,
-    'Baddies:',
+    'Lvl:',
+    this.world.level,
+    'Bad:',
     this.world.getEntitiesByType('Baddie').length,
-    '<br/>HP:',
+    'HP:',
     Math.floor(this.world.player.hp),
     'Score:',
     Math.floor(this.world.player.score),
-    '<br/>FPS:',
+    '<br/>Pos:',
+    this.world.player.oldPos,
+    'FPS:',
     this.world.fps,
     '<span class="History">',
     this.renderHistory(),
@@ -44,7 +46,9 @@ Stats.prototype.renderHistory = function () {
 //
 var Control = function (ui) {
   this.world = ui.world;
-  this.el = div(ui.el, 'Control');
+  this.el = div(ui.el, 'Control', null, {
+    display: 'none',
+  });
   this.buttons = [
     span(this.el, 'Button', '&nbsp;&nbsp;&nbsp;', null),
     event(span(this.el, 'Button Up', '🔼', null), 'click', this.clickDir.bind(this)('up')),
@@ -70,6 +74,19 @@ Control.prototype.clickDir = function (dir) {
     e.preventDefault();
     e.stopPropagation();
     self.world.player.dir = dir;
+  }
+}
+Control.prototype.toggle = function () {
+  if (this.open === true) {
+    style(this.el, {
+      display: 'none',
+    });
+    this.open = false;
+  } else {
+    style(this.el, {
+      display: 'inline-block',
+    });
+    this.open = true;
   }
 }
 
@@ -109,9 +126,9 @@ Inventory.prototype.toggle = function () {
 var UI = function (world) {
   this.world = world;
   this.el = div(world.el, 'UI');
-  this.inventory = new Inventory(this);
-  this.stats = new Stats(this);
   this.control = new Control(this);
+  this.stats = new Stats(this);
+  this.inventory = new Inventory(this);
 }
 UI.prototype.update = function () {
   this.stats.update();
