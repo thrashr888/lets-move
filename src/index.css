@@ -2,19 +2,22 @@ body {
   font-family: sans-serif;
   margin: 0;
   padding: 0;
+  background-color: #8bc34a;
 }
 
 .World {
   display: block;
-  margin: 3px;
+  margin: 0;
   padding: 0;
+  text-align: center;
 }
 
 .WorldMap {
   display: inline-block;
   background-color: #8bc34a;
-  border-radius: 5px;
+  /*border-radius: 5px;*/
   position: relative;
+  margin: auto;
 }
 
 .Entity {
@@ -27,7 +30,8 @@ body {
   transition-property: left, top;
   transition-duration: 0.125s;
   transition-delay: 0s;
-  vertical-align: middle;
+  vertical-align: baseline;
+  /*line-height: 0px;*/
 }
 
 .Player {
@@ -41,7 +45,7 @@ body {
 }
 
 .Wall {
-  animation-duration: 2s;
+  animation-duration: 1s;
   /*animation-name: wiggle;*/
   animation-iteration-count: infinite;
   animation-direction: alternate;
@@ -70,19 +74,37 @@ body {
   }
 }
 
+.Entity .Stat {
+  position: absolute;
+  /*font-size: 16px;*/
+  font-weight: bold;
+  text-shadow: 0px 0px 2px black;
+}
+.Entity .Gold {
+  bottom: -3px;
+  right: 0;
+  color: white;
+}
+.Entity .HP {
+  bottom: -3px;
+  left: 0;
+  color: red;
+}
+
 
 .UI {
-  width: 500px;
+  width: 100vw;
 }
 
 .Stats {
   background-color: black;
-  border: 1px solid green;
-  color: green;
+  /*border: 1px solid green;*/
+  color: white;
   font-family: monospace;
-  font-size: 1.3rem;
+  font-size: 1.5rem;
+  font-weight: bold;
   margin: 0;
-  padding: 0.3em;
+  padding: 0.66em;
 }
 
 .Inventory {
@@ -93,10 +115,13 @@ body {
 }
 
 .Control {
-  background-color: grey;
-  border: 2px solid black;
-  border-radius: 6px;
+  background-color: black;
   display: inline-block;
+  position: absolute;
+  padding: 4em 0.66em;
+  right: 0;
+  top: 0;
+  height: 100vh;
 }
 
 .Button {

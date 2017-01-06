@@ -97,7 +97,8 @@ WorldMap.prototype.setLevel = function (level) {
 //
 var World = function (rootEl) {
   // element
-  this.el = div(rootEl, 'World');
+  this.rootEl = rootEl;
+  this.el = div(this.rootEl, 'World');
 
   // stats
   this.tickCount = 0;
@@ -110,7 +111,7 @@ var World = function (rootEl) {
   // map
   this.level = 1;
   this.map = new WorldMap(this, this.level);
-  this.chunkSize = 35;
+  this.chunkSize = 40;
   this.size = [this.map.width * this.chunkSize, this.map.height * this.chunkSize];
   style(this.map.el, {
     width: this.size[0] + 1,
@@ -185,12 +186,11 @@ World.prototype.placeAll = function () {
         return;
       }
       // console.log(type, 'FOUND', r, c);
-      let entity = new Game[type](
-          this,
-          [c, r],
-          [type, c, r].join(':'),
-          this.map.icons[col]
-        );
+      let entity = new Game[type](this, {
+        pos: [c, r],
+        name: [type, c, r].join(':'),
+        icon: this.map.icons[col],
+      });
       this.entities.push(entity);
     });
   });

@@ -1,5 +1,5 @@
 
-import {style, event, div, span, br} from './helpers';
+import {style, event, div, span, br, h1, input} from './helpers';
 
 
 //
@@ -15,22 +15,22 @@ Stats.prototype.update = function () {
     // 'Tick:',
     // this.world.tickCount,
     // ';',
-    'Lvl:',
+    'Level: ',
     this.world.level,
-    'Bad:',
+    ', Baddies: ',
     this.world.getEntitiesByType('Baddie').length,
-    'HP:',
+    ', HP: ',
     Math.floor(this.world.player.hp),
-    'Score:',
-    Math.floor(this.world.player.score),
-    '<br/>Pos:',
-    this.world.player.oldPos,
-    'FPS:',
-    this.world.fps,
-    '<span class="History">',
-    this.renderHistory(),
-    '</span>'
-    ].join(' ');
+    ', Gold: ',
+    Math.floor(this.world.player.gold),
+    // '<br/>Pos:',
+    // this.world.player.oldPos,
+    // 'FPS:',
+    // this.world.fps,
+    // '<span class="History">',
+    // this.renderHistory(),
+    // '</span>'
+    ].join('');
 }
 Stats.prototype.renderHistory = function () {
   let out = [];
@@ -46,19 +46,14 @@ Stats.prototype.renderHistory = function () {
 //
 var Control = function (ui) {
   this.world = ui.world;
-  this.el = div(ui.el, 'Control', null, {
-    display: 'none',
-  });
+  this.el = div(ui.el, 'Control');
   this.buttons = [
-    span(this.el, 'Button', '&nbsp;&nbsp;&nbsp;', null),
     event(span(this.el, 'Button Up', '🔼', null), 'click', this.clickDir.bind(this)('up')),
-    span(this.el, 'Button', '&nbsp;', null),
     br(this.el),
     event(span(this.el, 'Button Left', '️◀️️', null), 'click', this.clickDir.bind(this)('left')),
     event(span(this.el, 'Button Down', '🔽', null), 'click', this.clickDir.bind(this)('down')),
     event(span(this.el, 'Button Right', '️▶️', null), 'click', this.clickDir.bind(this)('right')),
     br(this.el),
-    span(this.el, 'Button', '&nbsp;&nbsp;&nbsp;', null),
     event(span(this.el, 'Button Pause', '⏯', null), 'click', () => {
       if (this.world.running) {
         this.world.stop();
@@ -132,6 +127,22 @@ var UI = function (world) {
 }
 UI.prototype.update = function () {
   this.stats.update();
+}
+
+
+//
+// Title Card
+//
+var TitleCard = function (world) {
+  this.world = world;
+  this.el = div(world.rootEl, 'TitleCard');
+  this.content = [
+    h1(this.el, null, 'Let’s Eat'),
+    input(this.el, 'Name', 'WHAT IS YOUR NAME?', this.onNameChange.bind(this)),
+  ];
+}
+TitleCard.prototype.onNameChange = function (e) {
+  this.world.player.displayName = e.target.value;
 }
 
 
