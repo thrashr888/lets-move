@@ -1,12 +1,13 @@
-import React, { Component } from 'react';
+
+import { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
 class App extends Component {
   componentWillMount() {
-
+    console.log(this);
   }
-  
+
   render() {
     return (
       <div className="App">

@@ -1,6 +1,5 @@
 
-import {style, event, div, span, br, h1, input} from './helpers';
-
+import { style, event, div, span, br, h1, input } from './helpers';
 
 //
 // Stats
@@ -8,10 +7,12 @@ import {style, event, div, span, br, h1, input} from './helpers';
 var Stats = function (ui) {
   this.world = ui.world;
   this.el = div(ui.el, 'Stats', '<b>loading...</b>');
-}
+};
+
 Stats.prototype.update = function () {
   // console.log(this.world.player)
   this.el.innerHTML = [
+
     // 'Tick:',
     // this.world.tickCount,
     // ';',
@@ -23,6 +24,7 @@ Stats.prototype.update = function () {
     Math.floor(this.world.player.hp),
     ', Gold: ',
     Math.floor(this.world.player.gold),
+
     // '<br/>Pos:',
     // this.world.player.oldPos,
     // 'FPS:',
@@ -31,15 +33,16 @@ Stats.prototype.update = function () {
     // this.renderHistory(),
     // '</span>'
     ].join('');
-}
+};
+
 Stats.prototype.renderHistory = function () {
   let out = [];
   for (let v of this.world.fpsHistory) {
-    out.push('<span style="height:'+(v/2.5)+'px">&nbsp;</span>');
-  }
-  return out.join('');
-}
+    out.push('<span style="height:' + (v / 2.5) + 'px">&nbsp;</span>');
+  };
 
+  return out.join('');
+};
 
 //
 // Control
@@ -62,15 +65,17 @@ var Control = function (ui) {
       }
     }),
   ];
-}
+};
+
 Control.prototype.clickDir = function (dir) {
-  let self = this;
+  let _this = this;
   return function (e) {
     e.preventDefault();
     e.stopPropagation();
-    self.world.player.dir = dir;
-  }
-}
+    _this.world.player.dir = dir;
+  };
+};
+
 Control.prototype.toggle = function () {
   if (this.open === true) {
     style(this.el, {
@@ -83,8 +88,7 @@ Control.prototype.toggle = function () {
     });
     this.open = true;
   }
-}
-
+};
 
 //
 // Inventory
@@ -95,11 +99,13 @@ var Inventory = function (ui) {
     display: 'none',
   });
   this.buttons = [
+
     // span(this.el, 'Button', 'e', null),
   ];
   this.items = [];
   this.open = false;
-}
+};
+
 Inventory.prototype.toggle = function () {
   if (this.open === true) {
     style(this.el, {
@@ -112,8 +118,7 @@ Inventory.prototype.toggle = function () {
     });
     this.open = true;
   }
-}
-
+};
 
 //
 // UI
@@ -124,11 +129,11 @@ var UI = function (world) {
   this.control = new Control(this);
   this.stats = new Stats(this);
   this.inventory = new Inventory(this);
-}
+};
+
 UI.prototype.update = function () {
   this.stats.update();
-}
-
+};
 
 //
 // Title Card
@@ -140,10 +145,10 @@ var TitleCard = function (world) {
     h1(this.el, null, 'Let’s Eat'),
     input(this.el, 'Name', 'WHAT IS YOUR NAME?', this.onNameChange.bind(this)),
   ];
-}
+};
+
 TitleCard.prototype.onNameChange = function (e) {
   this.world.player.displayName = e.target.value;
-}
+};
 
-
-module.exports = {UI, Stats, Control, Inventory};
+module.exports = { UI, Stats, Control, Inventory };

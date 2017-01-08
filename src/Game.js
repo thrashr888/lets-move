@@ -1,9 +1,7 @@
 
-import {style, div, span} from './helpers';
-
+import { style, div, span } from './helpers';
 
 var Game = {};
-
 
 //
 // Entity
@@ -21,12 +19,15 @@ Game.Entity = function (world, config) {
     hp: 0,
     gold: 0,
   }, config);
+
   // apply settings to object
   for (let c in config) {
     this[c] = config[c];
-  }
+  };
+
   this.statsEl = [];
-}
+};
+
 Game.Entity.prototype.serialize = function () {
   return {
     type: this.type,
@@ -34,8 +35,9 @@ Game.Entity.prototype.serialize = function () {
     pos: this.pos,
     hp: this.hp,
     gold: this.gold,
-  }
-}
+  };
+};
+
 Game.Entity.prototype.deserialize = function (world, data) {
   let entity = new Game[data.type](world, {
     pos: data.pos,
@@ -45,7 +47,8 @@ Game.Entity.prototype.deserialize = function (world, data) {
   entity.hp = data.hp;
   entity.gold = data.gold;
   return entity;
-}
+};
+
 Game.Entity.prototype.createAndPos = function (pos) {
   this.statsEl = [];
   this.pos = pos ? pos : this.pos;
@@ -60,7 +63,8 @@ Game.Entity.prototype.createAndPos = function (pos) {
     animationDelay: Math.floor(left + 1 * top + 1 * 1000 * Math.random()) + 'ms',
   });
   this.applyStats();
-}
+};
+
 Game.Entity.prototype.create = function () {
   this.statsEl = [];
   this.el = div(this.world.map.el, 'Entity ' + this.type, this.icon, {
@@ -69,18 +73,20 @@ Game.Entity.prototype.create = function () {
     height: this.size[0],
   });
   this.applyStats();
-}
-Game.Entity.prototype.applyStats = function (pos) {
+};
+
+Game.Entity.prototype.applyStats = function () {
   this.statsEl.forEach(e => this.el.removeChild(e));
   this.statsEl = [
     span(this.el, 'Stat HP', this.hp, {
-      fontSize: Math.floor(this.world.chunkSize/2.5)
+      fontSize: Math.floor(this.world.chunkSize / 2.5),
     }),
     span(this.el, 'Stat Gold', this.gold, {
-      fontSize: Math.floor(this.world.chunkSize/2.5)
+      fontSize: Math.floor(this.world.chunkSize / 2.5),
     }),
   ];
-}
+};
+
 Game.Entity.prototype.goToPos = function (pos) {
   this.pos = pos ? pos : this.pos;
   let left = (this.pos[0] * this.world.chunkSize);
@@ -88,23 +94,25 @@ Game.Entity.prototype.goToPos = function (pos) {
   style(this.el, {
     left: left,
     top: top,
-    animationDelay: Math.floor(left+1 * top+1 * 1000 * Math.random()) + 'ms',
+    animationDelay: Math.floor(left + 1 * top + 1 * 1000 * Math.random()) + 'ms',
   });
-}
+};
+
 Game.Entity.prototype.resetPos = function () {
   this.pos[0] = this.oldPos[0];
   this.pos[1] = this.oldPos[1];
-}
+};
+
 Game.Entity.prototype.savePos = function () {
   this.oldPos[0] = this.pos[0];
   this.oldPos[1] = this.pos[1];
-}
+};
+
 Game.Entity.prototype.destroy = function () {
-  console.log('DESTROY', this)
+  console.log('DESTROY', this);
   this.el.parentElement.removeChild(this.el);
   this.world.removeEntity(this.name);
-}
-
+};
 
 //
 // Player
@@ -124,8 +132,10 @@ Game.Player = function () {
 
   this.createAndPos();
   document.addEventListener('keyup', this.keyUp.bind(this));
+
   // console.log(this)
-}
+};
+
 Game.Player.prototype = Object.create(Game.Entity.prototype);
 Game.Player.prototype.createStats = function () {
   this.hp = 50;
@@ -137,11 +147,12 @@ Game.Player.prototype.createStats = function () {
   this.stats.dexterity = 10;
   this.stats.constitution = 10;
   this.stats.charisma = 10;
-}
+};
+
 Game.Player.prototype.keyUp = function (e) {
   e.preventDefault();
   e.stopPropagation();
-  switch(e.key) {
+  switch (e.key) {
     case 'w' || 'ArrowUp':
       this.dir = 'up';
       break;
@@ -165,9 +176,11 @@ Game.Player.prototype.keyUp = function (e) {
       break;
     default:
       break;
-  }
+  };
+
   // console.log('Player.keyUp', this.dir, e.key)
-}
+};
+
 Game.Player.prototype.handleHit = function (entity) {
   if (entity.type === 'Baddie') {
     // console.log({entity});
@@ -189,29 +202,38 @@ Game.Player.prototype.handleHit = function (entity) {
     this.resetPos();
   } else if (entity.type === 'Exit') {
     this.world.exit();
-  }
+  };
+
   this.world.player.applyStats();
-}
+};
+
 Game.Player.prototype.eat = function (entity) {
   this.hp = this.hp + entity.hp;
+
   // console.log(entity.hp);
-}
+};
+
 Game.Player.prototype.hit = function (entity) {
   this.hp = this.hp + entity.hp;
   if (this.hp <= 0) {
     this.die(entity);
-  }
+  };
+
   // console.log(entity.hp);
-}
+};
+
 Game.Player.prototype.win = function (entity) {
   // TODO replace baddie with gold
   this.gold += entity.gold;
+
   // console.log(entity.hp);
-}
+};
+
 Game.Player.prototype.die = function (entity) {
   // this.world.level = 1;
   this.world.message('You were stopped by a ' + entity.type);
-}
+};
+
 Game.Player.prototype.act = function () {
   this.acted = false;
   if (this.action === 'inventory') {
@@ -224,10 +246,12 @@ Game.Player.prototype.act = function () {
     let entity = this.world.findByDir(this.pos, this.oldDir);
     this.world.engage(entity);
     this.acted = true;
-  }
+  };
+
   this.oldAction = this.action;
   this.action = null;
-}
+};
+
 Game.Player.prototype.move = function () {
   if (this.dir === 'up') {
     this.pos[1] = this.pos[1] - 1;
@@ -237,25 +261,27 @@ Game.Player.prototype.move = function () {
     this.pos[1] = this.pos[1] + 1;
   } else if (this.dir === 'right') {
     this.pos[0] = this.pos[0] + 1;
-  }
+  };
+
   this.moved = this.pos[0] !== this.oldPos[0] || this.pos[1] !== this.oldPos[1];
   if (this.moved && this.oldPos !== -1) {
     let entity = this.world.getEntityByPos(this.pos);
     if (entity) {
-      console.log('Hit', entity.type, entity.hp, this.world.entities.length)
+      console.log('Hit', entity.type, entity.hp, this.world.entities.length);
       this.handleHit(entity);
-    }
+    };
+
     // console.log(this.type + '.move', this.dir, this.oldPos, this.pos);
     this.goToPos();
     if (this.oldPos[0] !== -1) {
       this.world.moved();
     }
-  }
+  };
+
   this.savePos();
   this.oldDir = this.dir;
   this.dir = null;
 };
-
 
 //
 // Baddie
@@ -264,14 +290,14 @@ Game.Baddie = function () {
   this.type = 'Baddie';
   Game.Entity.apply(this, arguments);
   this.displayName = 'Sheep';
-  this.hp = 0-Math.floor(Math.random() * 5 * this.world.level)+1;
-  this.gold = Math.floor(Math.random() * 5 * this.world.level)+1;
+  this.hp = 0 - Math.floor(Math.random() * 5 * this.world.level) + 1;
+  this.gold = Math.floor(Math.random() * 5 * this.world.level) + 1;
   this.createAndPos();
-}
+};
+
 Game.Baddie.prototype = Object.create(Game.Entity.prototype);
 Game.Baddie.prototype.handleHit = function (entity) {
-  this.resetPos();
-  return;
+  // this.resetPos();
   // if (entity.type === 'Baddie') {
   //   this.resetPos();
   // } else if (entity.type === 'Player') {
@@ -286,10 +312,14 @@ Game.Baddie.prototype.handleHit = function (entity) {
   //   this.resetPos();
   // } else if (entity.type === 'Exit') {
   //   this.resetPos();
-  // }
-}
+  // };
+
+  return;
+};
+
 Game.Baddie.prototype.move = function (playerPos) {
   return;
+
   // if (playerPos[0] > this.pos[0]) {
   //   this.pos[0]++;
   // } else if (playerPos[0] < this.pos[0]) {
@@ -311,7 +341,6 @@ Game.Baddie.prototype.move = function (playerPos) {
   // this.savePos();
 };
 
-
 //
 // Wall
 //
@@ -319,9 +348,9 @@ Game.Wall = function () {
   this.type = 'Wall';
   Game.Entity.apply(this, arguments);
   this.createAndPos();
-}
-Game.Wall.prototype = Object.create(Game.Entity.prototype);
+};
 
+Game.Wall.prototype = Object.create(Game.Entity.prototype);
 
 //
 // Food
@@ -329,11 +358,11 @@ Game.Wall.prototype = Object.create(Game.Entity.prototype);
 Game.Food = function () {
   this.type = 'Food';
   Game.Entity.apply(this, arguments);
-  this.hp = Math.floor(Math.random() * 5 * this.world.level)+1;
+  this.hp = Math.floor(Math.random() * 5 * this.world.level) + 1;
   this.createAndPos();
-}
-Game.Food.prototype = Object.create(Game.Entity.prototype);
+};
 
+Game.Food.prototype = Object.create(Game.Entity.prototype);
 
 //
 // Gold
@@ -341,11 +370,11 @@ Game.Food.prototype = Object.create(Game.Entity.prototype);
 Game.Gold = function () {
   this.type = 'Gold';
   Game.Entity.apply(this, arguments);
-  this.gold = Math.floor(Math.random() * 5 * this.world.level)+1;
+  this.gold = Math.floor(Math.random() * 5 * this.world.level) + 1;
   this.createAndPos();
-}
-Game.Gold.prototype = Object.create(Game.Entity.prototype);
+};
 
+Game.Gold.prototype = Object.create(Game.Entity.prototype);
 
 //
 // Exit
@@ -354,9 +383,9 @@ Game.Exit = function () {
   this.type = 'Exit';
   Game.Entity.apply(this, arguments);
   this.createAndPos();
-}
-Game.Exit.prototype = Object.create(Game.Entity.prototype);
+};
 
+Game.Exit.prototype = Object.create(Game.Entity.prototype);
 
 //
 // Fire
@@ -364,11 +393,11 @@ Game.Exit.prototype = Object.create(Game.Entity.prototype);
 Game.Fire = function () {
   this.type = 'Fire';
   Game.Entity.apply(this, arguments);
-  this.hp = 0-Math.floor(Math.random() * 5 * this.world.level)+1;
+  this.hp = 0 - Math.floor(Math.random() * 5 * this.world.level) + 1;
   this.createAndPos();
-}
-Game.Fire.prototype = Object.create(Game.Entity.prototype);
+};
 
+Game.Fire.prototype = Object.create(Game.Entity.prototype);
 
 //
 // Empty
@@ -376,8 +405,8 @@ Game.Fire.prototype = Object.create(Game.Entity.prototype);
 Game.Empty = function () {
   this.type = 'Empty';
   Game.Entity.apply(this, arguments);
-}
-Game.Empty.prototype = Object.create(Game.Entity.prototype);
+};
 
+Game.Empty.prototype = Object.create(Game.Entity.prototype);
 
 module.exports = Game;
