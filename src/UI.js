@@ -25,6 +25,8 @@ Stats.prototype.update = function () {
     ', Gold: ',
     Math.floor(this.world.player.gold),
 
+    this.world.message ? '<div class="Message">' + this.world.message + '</div>' : '',
+
     // '<br/>Pos:',
     // this.world.player.oldPos,
     // 'FPS:',

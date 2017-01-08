@@ -90,6 +90,13 @@ body {
   left: 0;
   color: red;
 }
+.Entity .Pos {
+  bottom: -3px;
+  left: 50%;
+  color: yellow;
+  font-weight: normal;
+  /*text-shadow: none;*/
+}
 
 
 .UI {
@@ -151,4 +158,10 @@ body {
   margin-right: 0.5px;
   /*position: absolute;
   bottom: 0;*/
+}
+
+.Message {
+  font-weight: bold;
+  color: yellow;
+  font-size: 120%;
 }

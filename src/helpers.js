@@ -74,4 +74,38 @@ var input = function (parentEl, className=null, placeholder=null, cb=null) {
   return el;
 };
 
-module.exports = { style, event, el, div, span, br, h1, h2, input };
+var getPosDistance = function (pos1, pos2) {
+  let xs = 0;
+  let ys = 0;
+
+  xs = pos2[0] - pos1[0];
+  xs *= xs;
+
+  ys = pos2[1] - pos1[1];
+  ys *= ys;
+
+  return Math.sqrt(xs + ys);
+};
+
+var pickRandomMove = function (pos) {
+  let out = [pos[0], pos[1]];
+  switch (Math.floor(Math.random() * 4)) {
+    case 0:
+      out[0]++;
+      break;
+    case 1:
+      out[0]--;
+      break;
+    case 2:
+      out[1]++;
+      break;
+    case 3:
+      out[1]--;
+      break;
+    default:
+      break;
+  }
+  return out;
+}
+
+module.exports = { style, event, el, div, span, br, h1, h2, input, getPosDistance, pickRandomMove };

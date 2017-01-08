@@ -1,5 +1,5 @@
 
-import { style, div, span } from './helpers';
+import { style, div, span, getPosDistance } from './helpers';
 
 var Game = {};
 
@@ -64,6 +64,7 @@ Game.Entity.prototype.createAndPos = function (pos) {
     top: top,
     animationDelay: Math.floor(left + 1 * top + 1 * 1000 * Math.random()) + 'ms',
   });
+  this.savePos();
   this.applyStats();
 };
 
@@ -78,6 +79,7 @@ Game.Entity.prototype.create = function () {
 };
 
 Game.Entity.prototype.applyStats = function () {
+  if (this.type === 'Empty' || this.type === 'Wall') return;
   this.statsEl.forEach(e => this.el.removeChild(e));
   this.statsEl = [
     span(this.el, 'Stat HP', this.hp, {
@@ -86,6 +88,9 @@ Game.Entity.prototype.applyStats = function () {
     span(this.el, 'Stat Gold', this.gold, {
       fontSize: Math.floor(this.world.chunkSize / 2.5),
     }),
+    // span(this.el, 'Stat Pos', this.pos, {
+    //   fontSize: Math.floor(this.world.chunkSize / 2.5),
+    // }),
   ];
 };
 
@@ -98,6 +103,8 @@ Game.Entity.prototype.goToPos = function (pos) {
     top: top,
     animationDelay: Math.floor(left + 1 * top + 1 * 1000 * Math.random()) + 'ms',
   });
+  this.savePos();
+  this.applyStats();
 };
 
 Game.Entity.prototype.resetPos = function () {
@@ -108,6 +115,56 @@ Game.Entity.prototype.resetPos = function () {
 Game.Entity.prototype.savePos = function () {
   this.oldPos[0] = this.pos[0];
   this.oldPos[1] = this.pos[1];
+};
+
+Game.Entity.prototype.isInsideMap = function () {
+  return (
+    this.pos[0] >= 0 && this.pos[1] >= 0 &&
+    this.pos[0] < this.world.map.width && this.pos[1] < this.world.map.height
+  );
+};
+
+Game.Entity.prototype.hasMoved = function () {
+  return (this.pos[0] !== this.oldPos[0] || this.pos[1] !== this.oldPos[1]);
+};
+
+Game.Entity.prototype.getOtherEntitiesByPos = function (pos) {
+  return this.world.getEntitiesByPos(this.pos)
+        .filter(e => e.type !== 'Empty' && e.name !== this.name);
+};
+
+Game.Entity.prototype.getEmptyByPos = function (pos) {
+  return this.world.getEntitiesByPos(this.pos).find(e => e.type === 'Empty');
+};
+
+Game.Entity.prototype.getNearEmptiesByPos = function (pos) {
+  // up, down, left, right
+  return this.world.entities
+    .filter(e => e.type === 'Empty')
+    .filter((e) => (e.pos[0] === pos[0] - 1 && e.pos[1] === pos[1]) ||
+        (e.pos[0] === pos[0] + 1 && e.pos[1] === pos[1]) ||
+        (e.pos[1] === pos[1] - 1 && e.pos[0] === pos[0]) ||
+        (e.pos[1] === pos[1] + 1 && e.pos[0] === pos[0])
+    );
+};
+
+// return the closest empty space to the dest
+// 012345
+// 1..u..
+// 2.lSr.
+// 3..d..
+// 4.....
+// 5....D
+Game.Entity.prototype.getEmptyNearDestByPos = function (sourcePos, destPos) {
+  let empties = this.getNearEmptiesByPos(sourcePos);
+  if (empties.length === 0) return null;
+  // console.log('empties', sourcePos, empties.map(e => e.pos));
+  return empties.sort((a, b) => {
+      let aDist = getPosDistance(a.pos, destPos);
+      let bDist = getPosDistance(b.pos, destPos);
+      console.log('===>', destPos, a.pos, aDist, b.pos, bDist);
+      return aDist > bDist;
+    })[0];
 };
 
 Game.Entity.prototype.destroy = function () {
@@ -124,15 +181,18 @@ Game.Player = function () {
   Game.Entity.apply(this, arguments);
 
   this.dir = null;
+  this.dirCount = 0;
   this.oldDir = null;
   this.moved = false;
   this.action = null;
   this.oldAction = null;
   this.acted = false;
 
-  this.createStats();
-
+  this.hp = 50;
+  this.gold = 0;
   this.createAndPos();
+
+  document.addEventListener('keydown', this.keyDown.bind(this));
   document.addEventListener('keyup', this.keyUp.bind(this));
 
   // console.log(this)
@@ -142,18 +202,25 @@ Game.Player.prototype = Object.create(Game.Entity.prototype);
 Game.Player.prototype.createStats = function () {
   this.hp = 50;
   this.gold = 0;
-  this.stats = {};
-  this.stats.strength = 10;
-  this.stats.intelligence = 10;
-  this.stats.wisdom = 10;
-  this.stats.dexterity = 10;
-  this.stats.constitution = 10;
-  this.stats.charisma = 10;
+};
+
+Game.Player.prototype.keyDown = function (e) {
+  switch (e.key) {
+    case 'w' || 'ArrowUp':
+    case 'a' || 'ArrowLeft':
+    case 's' || 'ArrowDown':
+    case 'd' || 'ArrowRight':
+      this.dirCount++;
+      break;
+    default:
+      break;
+  };
+
+  e.preventDefault();
+  e.stopPropagation();
 };
 
 Game.Player.prototype.keyUp = function (e) {
-  e.preventDefault();
-  e.stopPropagation();
   switch (e.key) {
     case 'w' || 'ArrowUp':
       this.dir = 'up';
@@ -180,7 +247,10 @@ Game.Player.prototype.keyUp = function (e) {
       break;
   };
 
-  // console.log('Player.keyUp', this.dir, e.key)
+  e.preventDefault();
+  e.stopPropagation();
+
+  console.log('Player.keyUp', this.dir, this.dirCount, e.key);
 };
 
 Game.Player.prototype.handleHit = function (entity) {
@@ -206,13 +276,11 @@ Game.Player.prototype.handleHit = function (entity) {
     this.world.exit();
   };
 
-  this.world.player.applyStats();
+  // this.applyStats();
 };
 
 Game.Player.prototype.eat = function (entity) {
   this.hp = this.hp + entity.hp;
-
-  // console.log(entity.hp);
 };
 
 Game.Player.prototype.hit = function (entity) {
@@ -220,20 +288,19 @@ Game.Player.prototype.hit = function (entity) {
   if (this.hp <= 0) {
     this.die(entity);
   };
-
-  // console.log(entity.hp);
 };
 
 Game.Player.prototype.win = function (entity) {
   // TODO replace baddie with gold
   this.gold += entity.gold;
-
-  // console.log(entity.hp);
 };
 
 Game.Player.prototype.die = function (entity) {
-  // this.world.level = 1;
-  this.world.message('You were stopped by a ' + entity.type);
+  this.hp = 50;
+  this.gold = 0;
+  this.world.level = 0;
+  this.world.setMessage('You were stopped by a ' + entity.type + '!');
+  this.world.exit();
 };
 
 Game.Player.prototype.act = function () {
@@ -265,12 +332,23 @@ Game.Player.prototype.move = function () {
     this.pos[0] = this.pos[0] + 1;
   };
 
-  this.moved = this.pos[0] !== this.oldPos[0] || this.pos[1] !== this.oldPos[1];
-  if (this.moved && this.oldPos !== -1) {
-    let entity = this.world.getEntityByPos(this.pos);
-    if (entity) {
-      console.log('Hit', entity.type, entity.hp, this.world.entities.length);
-      this.handleHit(entity);
+  this.moved = this.hasMoved();
+  if (this.moved && this.oldPos[0] !== -1 && this.oldPos[1] !== -1) {
+    this.dirCount = 0;
+
+    // Stay in the world
+    if (!this.isInsideMap()) {
+      this.resetPos();
+      return;
+    }
+
+    console.log(this.name, 'Move.Pass', this.oldPos, this.pos);
+
+    // Check if we hit any other entities
+    let entities = this.getOtherEntitiesByPos(this.pos);
+    if (entities.length > 0) {
+      console.log('Hit', entities);
+      this.handleHit(entities[0]);
     };
 
     // console.log(this.type + '.move', this.dir, this.oldPos, this.pos);
@@ -280,7 +358,7 @@ Game.Player.prototype.move = function () {
     }
   };
 
-  this.savePos();
+  // this.savePos();
   this.oldDir = this.dir;
   this.dir = null;
 };
@@ -299,48 +377,53 @@ Game.Baddie = function () {
 
 Game.Baddie.prototype = Object.create(Game.Entity.prototype);
 Game.Baddie.prototype.handleHit = function (entity) {
-  // this.resetPos();
-  // if (entity.type === 'Baddie') {
-  //   this.resetPos();
-  // } else if (entity.type === 'Player') {
-  //   this.resetPos();
-  // } else if (entity.type === 'Food') {
-  //   this.resetPos();
-  // } else if (entity.type === 'Gold') {
-  //   this.resetPos();
-  // } else if (entity.type === 'Wall') {
-  //   this.resetPos();
-  // } else if (entity.type === 'Fire') {
-  //   this.resetPos();
-  // } else if (entity.type === 'Exit') {
-  //   this.resetPos();
-  // };
 
-  return;
+  if (entity.type === 'Baddie' && entity.name !== this.name) {
+    this.resetPos();
+  } else if (entity.type === 'Player') {
+    this.resetPos();
+  } else if (entity.type === 'Food') {
+    this.resetPos();
+  } else if (entity.type === 'Gold') {
+    this.resetPos();
+  } else if (entity.type === 'Wall') {
+    this.resetPos();
+  } else if (entity.type === 'Fire') {
+    this.resetPos();
+  } else if (entity.type === 'Exit') {
+    this.resetPos();
+  };
+
+  // this.applyStats();
 };
 
 Game.Baddie.prototype.move = function (playerPos) {
-  return;
+  let nearestEmpty = this.getEmptyNearDestByPos(this.pos, playerPos);
+  if (nearestEmpty) {
+    console.log(playerPos, this.pos, nearestEmpty.pos, { nearestEmpty });
+    this.pos[0] = nearestEmpty.pos[0];
+    this.pos[1] = nearestEmpty.pos[1];
+  }
 
-  // if (playerPos[0] > this.pos[0]) {
-  //   this.pos[0]++;
-  // } else if (playerPos[0] < this.pos[0]) {
-  //   this.pos[0]--;
-  // } else if (playerPos[1] > this.pos[1]) {
-  //   this.pos[1]++;
-  // } else if (playerPos[1] < this.pos[1]) {
-  //   this.pos[1]--;
-  // }
-  // this.moved = this.pos[0] !== this.oldPos[0] || this.pos[1] !== this.oldPos[1];
-  // if (this.moved && this.oldPos[0] !== -1) {
-  //   let entity = this.world.getEntityByPos(this.pos);
-  //   if (entity) {
-  //     console.log('Baddie Hit', entity.type, entity.hp, this.world.entities.length)
-  //     this.handleHit(entity);
-  //   }
-  //   this.goToPos();
-  // }
-  // this.savePos();
+  console.log(this.name, 'Move.Check', this.pos);
+
+  this.moved = this.hasMoved();
+  if (this.moved && this.oldPos[0] !== -1 && this.oldPos[1] !== -1) {
+    if (!this.isInsideMap()) {
+      this.resetPos();
+      return;
+    }
+
+    console.log(this.name, 'Move.Pass', this.oldPos, this.pos);
+
+    let entities = this.getOtherEntitiesByPos(this.pos);
+    if (entities.length > 0) {
+      console.log(this.name, 'Hit', entities);
+      this.handleHit(entities[0]);
+    };
+
+    this.goToPos();
+  };
 };
 
 //
