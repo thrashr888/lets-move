@@ -18,5 +18,10 @@
   },
   "eslintConfig": {
     "extends": "react-app"
+  },
+  "jest": {
+    "browser": true,
+    "notify": true,
+    "testEnvironment": "jsdom"
   }
 }

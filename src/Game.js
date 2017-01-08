@@ -22,7 +22,9 @@ Game.Entity = function (world, config) {
 
   // apply settings to object
   for (let c in config) {
-    this[c] = config[c];
+    if (Object.prototype.hasOwnProperty.call(config, c)) {
+      this[c] = config[c];
+    }
   };
 
   this.statsEl = [];
