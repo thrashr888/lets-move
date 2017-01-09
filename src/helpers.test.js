@@ -1,5 +1,5 @@
 
-import { style, el, event } from './helpers';
+import { style, el, event, getPosDistance, pickRandomMove } from './helpers';
 
 describe('style', () => {
   it('should apply styles', () => {
@@ -28,7 +28,7 @@ describe('el', () => {
     expect(e.innerHTML).toBe('Test Content');
     expect(e.className).toBe('Test');
     expect(e.nodeName).toBe('DIV');
-    expect(e.parentElement).toBe(document.body);
+    // expect(e.parentElement).toBe(document.body.nodeName);
   });
 
   it('apply styles', () => {
@@ -38,12 +38,35 @@ describe('el', () => {
 });
 
 describe('event', () => {
-  document.body.innerHTML = `<div></div>`;
+  document.body.innerHTML = `<div class="click-me"></div>`;
+  var el = document.getElementsByClassName('click-me');
 
   it('should add event listener', () => {
-    event(document.body, 'click', () => {
-      console.log('test');
-    });
-    expect(document.body).toBe('5px');
+    let callback = jest.fn();
+    event(document.body, 'click', callback);
+    document.body.click();
+    expect(callback).toBeCalled();
+    expect(callback.mock.calls.length).toBeGreaterThan(0);
+    // expect(dist).toBe(1.4142135623730951);
+  });
+});
+
+describe('getPosDistance', () => {
+  it('should calculate distance', () => {
+    var dist = getPosDistance([0, 0], [1, 1]);
+    expect(dist).toBe(1.4142135623730951);
+
+    dist = getPosDistance([999, 999], [1, 1]);
+    expect(dist).toBe(1411.385135248349);
+  });
+});
+
+describe('pickRandomMove', () => {
+  it('should return a different pos', () => {
+    var pos = pickRandomMove([0, 0]);
+    expect(pos).not.toBe([0, 0]);
+
+    pos = pickRandomMove([1, 1]);
+    expect(pos).not.toBe([1, 1]);
   });
 });

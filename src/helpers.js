@@ -2,7 +2,7 @@
 //
 // HELPERS
 //
-var style = function (el, styles) {
+function style(el, styles) {
   for (let i in styles) {
     if (Number.isInteger(styles[i])) {
       el.style[i] = styles[i] + 'px';
@@ -12,13 +12,13 @@ var style = function (el, styles) {
   }
 };
 
-var event = function (el, name, cb) {
+function event(el, name, cb) {
   el.addEventListener(name, cb);
   return el;
 };
 
-var el = function (parentEl, className=null, innerHTML=null, styles=null, type='div') {
-  var el = document.createElement(type);
+function el(parentEl, className=null, innerHTML=null, styles=null, type='div') {
+  let el = document.createElement(type);
   if (className) {
     el.className = className;
   };
@@ -35,28 +35,28 @@ var el = function (parentEl, className=null, innerHTML=null, styles=null, type='
   return el;
 };
 
-var div = function (parentEl, className=null, innerHTML=null, styles=null) {
+function div(parentEl, className=null, innerHTML=null, styles=null) {
   return el(parentEl, className, innerHTML, styles, 'div');
 };
 
-var span = function (parentEl, className=null, innerHTML=null, styles=null) {
+function span(parentEl, className=null, innerHTML=null, styles=null) {
   // console.log('span', arguments)
   return el(parentEl, className, innerHTML, styles, 'span');
 };
 
-var br = function (parentEl) {
+function br(parentEl) {
   return el(parentEl, null, null, null, 'br');
 };
 
-var h1 = function (parentEl, className=null, innerHTML=null, styles=null) {
+function h1(parentEl, className=null, innerHTML=null, styles=null) {
   return el(parentEl, className, innerHTML, styles, 'h1');
 };
 
-var h2 = function (parentEl, className=null, innerHTML=null, styles=null) {
+function h2(parentEl, className=null, innerHTML=null, styles=null) {
   return el(parentEl, className, innerHTML, styles, 'h2');
 };
 
-var input = function (parentEl, className=null, placeholder=null, cb=null) {
+function input(parentEl, className=null, placeholder=null, cb=null) {
   var el = document.createElement('input');
   if (className) {
     el.className = className;
@@ -74,7 +74,7 @@ var input = function (parentEl, className=null, placeholder=null, cb=null) {
   return el;
 };
 
-var getPosDistance = function (pos1, pos2) {
+function getPosDistance(pos1, pos2) {
   let xs = 0;
   let ys = 0;
 
@@ -87,9 +87,9 @@ var getPosDistance = function (pos1, pos2) {
   return Math.sqrt(xs + ys);
 };
 
-var pickRandomMove = function (pos) {
+function pickRandomMove(pos) {
   let out = [pos[0], pos[1]];
-  switch (Math.floor(Math.random() * 4)) {
+  switch (getRandomInt(0, 3)) {
     case 0:
       out[0]++;
       break;
@@ -106,6 +106,76 @@ var pickRandomMove = function (pos) {
       break;
   }
   return out;
+};
+
+function getRandomArbitrary(min, max) {
+  return Math.random() * (max - min) + min;
+};
+
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min;
+};
+
+// Generate random numbers that follow a Normal distribution.
+var spareRandom = null;
+function normalRandom() {
+  var val;
+  var u;
+  var v;
+  var s;
+  var mul;
+
+  if (spareRandom !== null) {
+    val = spareRandom;
+    spareRandom = null;
+  } else {
+    do {
+      u = Math.random() * 2 - 1;
+      v = Math.random() * 2 - 1;
+
+      s = u * u + v * v;
+    } while (s === 0 || s >= 1);
+
+    mul = Math.sqrt(-2 * Math.log(s) / s);
+    val = u * mul;
+    spareRandom = v * mul;
+  };
+
+  return val / 14; // 7 standard deviations on either side
 }
 
-module.exports = { style, event, el, div, span, br, h1, h2, input, getPosDistance, pickRandomMove };
+// Generate random numbers that follow a Normal distribution but are clipped to fit within a range
+function normalRandomInRange(min, max) {
+  var val;
+  do {
+    val = normalRandom();
+  } while (val < min || val > max);
+  return val;
+}
+
+// Generate random numbers that follow a Normal
+// distribution with a given mean and standard deviation
+function normalRandomScaled(mean, stddev) {
+  var r = normalRandomInRange(-1, 1);
+  r = r * stddev + mean;
+  return Math.round(r);
+}
+
+// Generate random numbers that follow a Log-normal distribution
+// with a given geometric mean and geometric standard deviation
+function lnRandomScaled(gmean, gstddev) {
+  var r = normalRandomInRange(-1, 1);
+  r = r * Math.log(gstddev) + Math.log(gmean);
+
+  // console.log('lnRandomScaled', gmean, gstddev, r, Math.round(Math.exp(r)));
+  return Math.round(Math.exp(r));
+}
+
+module.exports = {
+  style, event, el, div, span, br, h1, h2, input,
+  getPosDistance, pickRandomMove,
+  getRandomArbitrary, getRandomInt,
+  normalRandom, normalRandomInRange, normalRandomScaled, lnRandomScaled,
+};

@@ -1,7 +1,8 @@
 
-import { style, div, span, getPosDistance } from './helpers';
+import { style, div, span, getPosDistance, pickRandomMove, getRandomInt, lnRandomScaled } from './helpers';
 
 var Game = {};
+var stdDev = 3;
 
 //
 // Entity
@@ -15,7 +16,7 @@ Game.Entity = function (world, config) {
     pos: [0, 0],
     oldPos: [-1, -1],
     moved: false,
-    size: [this.world.chunkSize, this.world.chunkSize],
+    // size: [this.world.chunkSize, this.world.chunkSize],
     hp: 0,
     gold: 0,
   }, config);
@@ -57,9 +58,9 @@ Game.Entity.prototype.createAndPos = function (pos) {
   let left = (this.pos[0] * this.world.chunkSize);
   let top = (this.pos[1] * this.world.chunkSize);
   this.el = div(this.world.map.el, 'Entity ' + this.type, this.icon, {
-    fontSize: this.size[0],
-    width: this.size[0],
-    height: this.size[0],
+    fontSize: this.world.chunkSize,
+    width: this.world.chunkSize,
+    height: this.world.chunkSize,
     left: left,
     top: top,
     animationDelay: Math.floor(left + 1 * top + 1 * 1000 * Math.random()) + 'ms',
@@ -71,9 +72,9 @@ Game.Entity.prototype.createAndPos = function (pos) {
 Game.Entity.prototype.create = function () {
   this.statsEl = [];
   this.el = div(this.world.map.el, 'Entity ' + this.type, this.icon, {
-    fontSize: this.size[0],
-    width: this.size[0],
-    height: this.size[0],
+    fontSize: this.world.chunkSize,
+    width: this.world.chunkSize,
+    height: this.world.chunkSize,
   });
   this.applyStats();
 };
@@ -88,6 +89,7 @@ Game.Entity.prototype.applyStats = function () {
     span(this.el, 'Stat Gold', this.gold, {
       fontSize: Math.floor(this.world.chunkSize / 2.5),
     }),
+
     // span(this.el, 'Stat Pos', this.pos, {
     //   fontSize: Math.floor(this.world.chunkSize / 2.5),
     // }),
@@ -158,12 +160,35 @@ Game.Entity.prototype.getNearEmptiesByPos = function (pos) {
 Game.Entity.prototype.getEmptyNearDestByPos = function (sourcePos, destPos) {
   let empties = this.getNearEmptiesByPos(sourcePos);
   if (empties.length === 0) return null;
+
   // console.log('empties', sourcePos, empties.map(e => e.pos));
   return empties.sort((a, b) => {
       let aDist = getPosDistance(a.pos, destPos);
       let bDist = getPosDistance(b.pos, destPos);
-      console.log('===>', destPos, a.pos, aDist, b.pos, bDist);
+
+      // console.log('===>', destPos, a.pos, aDist, b.pos, bDist);
       return aDist > bDist;
+    })[0];
+};
+
+// return the closest empty space to the dest
+// 012345
+// 1..u..
+// 2.lSr.
+// 3..d..
+// 4.....
+// 5....D
+Game.Entity.prototype.getEmptyFarthestDestByPos = function (sourcePos, destPos) {
+  let empties = this.getNearEmptiesByPos(sourcePos);
+  if (empties.length === 0) return null;
+
+  // console.log('empties', sourcePos, empties.map(e => e.pos));
+  return empties.sort((a, b) => {
+      let aDist = getPosDistance(a.pos, destPos);
+      let bDist = getPosDistance(b.pos, destPos);
+
+      // console.log('===>', destPos, a.pos, aDist, b.pos, bDist);
+      return aDist < bDist;
     })[0];
 };
 
@@ -188,51 +213,37 @@ Game.Player = function () {
   this.oldAction = null;
   this.acted = false;
 
-  this.hp = 50;
-  this.gold = 0;
+  this.resetStats();
   this.createAndPos();
 
   document.addEventListener('keydown', this.keyDown.bind(this));
-  document.addEventListener('keyup', this.keyUp.bind(this));
 
   // console.log(this)
 };
 
 Game.Player.prototype = Object.create(Game.Entity.prototype);
-Game.Player.prototype.createStats = function () {
-  this.hp = 50;
+Game.Player.prototype.resetStats = function () {
+  this.hp = 20;
   this.gold = 0;
 };
 
 Game.Player.prototype.keyDown = function (e) {
   switch (e.key) {
     case 'w' || 'ArrowUp':
-    case 'a' || 'ArrowLeft':
-    case 's' || 'ArrowDown':
-    case 'd' || 'ArrowRight':
-      this.dirCount++;
-      break;
-    default:
-      break;
-  };
-
-  e.preventDefault();
-  e.stopPropagation();
-};
-
-Game.Player.prototype.keyUp = function (e) {
-  switch (e.key) {
-    case 'w' || 'ArrowUp':
       this.dir = 'up';
+      this.dirCount++;
       break;
     case 'a' || 'ArrowLeft':
       this.dir = 'left';
+      this.dirCount++;
       break;
     case 's' || 'ArrowDown':
       this.dir = 'down';
+      this.dirCount++;
       break;
     case 'd' || 'ArrowRight':
       this.dir = 'right';
+      this.dirCount++;
       break;
     case 'e':
       this.action = 'engage';
@@ -247,14 +258,26 @@ Game.Player.prototype.keyUp = function (e) {
       break;
   };
 
+  if (e.metaKey === true && (e.key === 'r' || e.key === 'p')) {
+    // refresh page or print
+    // pass
+    return;
+  }
+
   e.preventDefault();
   e.stopPropagation();
 
-  console.log('Player.keyUp', this.dir, this.dirCount, e.key);
+  // console.log('Player.keyDown', this.dirCount, e.key, e);
 };
 
 Game.Player.prototype.handleHit = function (entity) {
   if (entity.type === 'Baddie') {
+    // console.log({entity});
+    this.hit(entity);
+    this.win(entity);
+    entity.destroy();
+    this.resetPos();
+  } else if (entity.type === 'Friendly') {
     // console.log({entity});
     this.hit(entity);
     this.win(entity);
@@ -296,11 +319,8 @@ Game.Player.prototype.win = function (entity) {
 };
 
 Game.Player.prototype.die = function (entity) {
-  this.hp = 50;
-  this.gold = 0;
-  this.world.level = 0;
-  this.world.setMessage('You were stopped by a ' + entity.type + '!');
-  this.world.exit();
+  this.resetStats();
+  this.world.lose(entity);
 };
 
 Game.Player.prototype.act = function () {
@@ -364,21 +384,33 @@ Game.Player.prototype.move = function () {
 };
 
 //
-// Baddie
+// NPC
 //
-Game.Baddie = function () {
-  this.type = 'Baddie';
+Game.NPC = function () {
   Game.Entity.apply(this, arguments);
+};
+
+Game.NPC.prototype = Object.create(Game.Entity.prototype);
+
+//
+// Friendly
+//
+Game.Friendly = function () {
+  this.type = 'Friendly';
+  Game.NPC.apply(this, arguments);
   this.displayName = 'Sheep';
-  this.hp = 0 - Math.floor(Math.random() * 5 * this.world.level) + 1;
-  this.gold = Math.floor(Math.random() * 5 * this.world.level) + 1;
+  this.hp = lnRandomScaled(1, stdDev);
+  this.gold = lnRandomScaled(this.world.level, stdDev);
   this.createAndPos();
 };
 
-Game.Baddie.prototype = Object.create(Game.Entity.prototype);
-Game.Baddie.prototype.handleHit = function (entity) {
-
-  if (entity.type === 'Baddie' && entity.name !== this.name) {
+Game.Friendly.prototype = Object.create(Game.NPC.prototype);
+Game.Friendly.prototype.handleHit = function (entity) {
+  if (entity.type === this.type && entity.name !== this.name) {
+    this.resetPos();
+  } else if (entity.type === 'Baddie') {
+    this.resetPos();
+  } else if (entity.type === 'Friendly') {
     this.resetPos();
   } else if (entity.type === 'Player') {
     this.resetPos();
@@ -393,14 +425,85 @@ Game.Baddie.prototype.handleHit = function (entity) {
   } else if (entity.type === 'Exit') {
     this.resetPos();
   };
+};
 
-  // this.applyStats();
+Game.Friendly.prototype.move = function (playerPos) {
+  // let nearestEmpty = this.getEmptyFarthestDestByPos(this.pos, playerPos);
+  // if (nearestEmpty) {
+  //   console.log(playerPos, this.pos, nearestEmpty.pos, { nearestEmpty });
+  //   this.pos[0] = nearestEmpty.pos[0];
+  //   this.pos[1] = nearestEmpty.pos[1];
+  // }
+
+  if (getRandomInt(0, 3) === 1) {
+    this.pos = pickRandomMove(this.pos);
+  };
+
+  console.log(this.name, 'Move.Check', this.pos);
+
+  this.moved = this.hasMoved();
+  if (this.moved && this.oldPos[0] !== -1 && this.oldPos[1] !== -1) {
+    if (!this.isInsideMap()) {
+      this.resetPos();
+      return;
+    }
+
+    console.log(this.name, 'Move.Pass', this.oldPos, this.pos);
+
+    let entities = this.getOtherEntitiesByPos(this.pos);
+    if (entities.length > 0) {
+      console.log(this.name, 'Hit', entities);
+      this.handleHit(entities[0]);
+    };
+
+    this.goToPos();
+  };
+};
+
+//
+// Baddie
+//
+Game.Baddie = function () {
+  this.type = 'Baddie';
+  Game.NPC.apply(this, arguments);
+  this.displayName = 'Snake';
+
+  // this.hp = 0 - getRandomInt(this.world.level / 2, this.world.level);
+  // this.gold = getRandomInt(0, this.world.level);
+  this.hp = lnRandomScaled(this.world.level, stdDev);
+  this.gold = lnRandomScaled(this.world.level, stdDev);
+  this.createAndPos();
+};
+
+Game.Baddie.prototype = Object.create(Game.NPC.prototype);
+Game.Baddie.prototype.handleHit = function (entity) {
+  if (entity.type === this.type && entity.name !== this.name) {
+    this.resetPos();
+  } else if (entity.type === 'Baddie') {
+    this.resetPos();
+  } else if (entity.type === 'Friendly') {
+    this.resetPos();
+  } else if (entity.type === 'Player') {
+    this.resetPos();
+  } else if (entity.type === 'Food') {
+    this.resetPos();
+  } else if (entity.type === 'Gold') {
+    this.resetPos();
+  } else if (entity.type === 'Wall') {
+    this.resetPos();
+  } else if (entity.type === 'Fire') {
+    this.resetPos();
+  } else if (entity.type === 'Exit') {
+    this.resetPos();
+  };
 };
 
 Game.Baddie.prototype.move = function (playerPos) {
   let nearestEmpty = this.getEmptyNearDestByPos(this.pos, playerPos);
   if (nearestEmpty) {
-    console.log(playerPos, this.pos, nearestEmpty.pos, { nearestEmpty });
+    console.log(this.name, 'Move.nearestEmpty',
+      playerPos, this.pos, nearestEmpty.pos, { nearestEmpty },
+      );
     this.pos[0] = nearestEmpty.pos[0];
     this.pos[1] = nearestEmpty.pos[1];
   }
@@ -443,7 +546,9 @@ Game.Wall.prototype = Object.create(Game.Entity.prototype);
 Game.Food = function () {
   this.type = 'Food';
   Game.Entity.apply(this, arguments);
-  this.hp = Math.floor(Math.random() * 5 * this.world.level) + 1;
+
+  // this.hp = getRandomInt(1 + this.world.level / 2, this.world.level);
+  this.hp = lnRandomScaled(this.world.level, stdDev);
   this.createAndPos();
 };
 
@@ -455,11 +560,27 @@ Game.Food.prototype = Object.create(Game.Entity.prototype);
 Game.Gold = function () {
   this.type = 'Gold';
   Game.Entity.apply(this, arguments);
-  this.gold = Math.floor(Math.random() * 5 * this.world.level) + 1;
+
+  // this.gold = getRandomInt(1, this.world.level);
+  this.gold = lnRandomScaled(this.world.level, stdDev);
   this.createAndPos();
 };
 
 Game.Gold.prototype = Object.create(Game.Entity.prototype);
+
+//
+// Fire
+//
+Game.Fire = function () {
+  this.type = 'Fire';
+  Game.Entity.apply(this, arguments);
+
+  // this.hp = 0 - getRandomInt(1, this.world.level);
+  this.hp = lnRandomScaled(this.world.level, stdDev);
+  this.createAndPos();
+};
+
+Game.Fire.prototype = Object.create(Game.Entity.prototype);
 
 //
 // Exit
@@ -471,18 +592,6 @@ Game.Exit = function () {
 };
 
 Game.Exit.prototype = Object.create(Game.Entity.prototype);
-
-//
-// Fire
-//
-Game.Fire = function () {
-  this.type = 'Fire';
-  Game.Entity.apply(this, arguments);
-  this.hp = 0 - Math.floor(Math.random() * 5 * this.world.level) + 1;
-  this.createAndPos();
-};
-
-Game.Fire.prototype = Object.create(Game.Entity.prototype);
 
 //
 // Empty
