@@ -399,7 +399,7 @@ Game.Friendly = function () {
   this.type = 'Friendly';
   Game.NPC.apply(this, arguments);
   this.displayName = 'Sheep';
-  this.hp = lnRandomScaled(1, stdDev);
+  this.hp = 0 - lnRandomScaled(1, stdDev);
   this.gold = lnRandomScaled(this.world.level, stdDev);
   this.createAndPos();
 };
@@ -470,7 +470,7 @@ Game.Baddie = function () {
 
   // this.hp = 0 - getRandomInt(this.world.level / 2, this.world.level);
   // this.gold = getRandomInt(0, this.world.level);
-  this.hp = lnRandomScaled(this.world.level, stdDev);
+  this.hp = 0 - lnRandomScaled(this.world.level, stdDev);
   this.gold = lnRandomScaled(this.world.level, stdDev);
   this.createAndPos();
 };
@@ -576,7 +576,7 @@ Game.Fire = function () {
   Game.Entity.apply(this, arguments);
 
   // this.hp = 0 - getRandomInt(1, this.world.level);
-  this.hp = lnRandomScaled(this.world.level, stdDev);
+  this.hp = 0 - lnRandomScaled(this.world.level, stdDev);
   this.createAndPos();
 };
 
