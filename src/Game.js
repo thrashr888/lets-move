@@ -258,8 +258,8 @@ Game.Player.prototype.keyDown = function (e) {
       break;
   };
 
-  if (e.metaKey === true && (e.key === 'r' || e.key === 'p')) {
-    // refresh page or print
+  if (e.metaKey === true && (e.key === 'r' || e.key === 'm' || e.key === 'p')) {
+    // refresh page, minimize or print
     // pass
     return;
   }
