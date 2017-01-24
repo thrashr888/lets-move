@@ -43,7 +43,7 @@ var WorldMap = function (world, level) {
       [1,2,1,6,0,0,1],
       [1,0,0,1,1,0,5],
       [1,0,1,0,0,0,1],
-      [1,4,0,3,1,7,1],
+      [1,4,0,9,1,7,1],
       [1,1,1,1,1,1,1],
     ], },
     { name: 'A Baddie Appears!', chunkSize: 75, field: [

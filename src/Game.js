@@ -32,6 +32,7 @@ Game.Entity = function (world, config) {
   this.statsEl = [];
 };
 
+// grab this entitie's stats and save it as a js data object
 Game.Entity.prototype.serialize = function () {
   return {
     type: this.type,
@@ -42,6 +43,7 @@ Game.Entity.prototype.serialize = function () {
   };
 };
 
+// take a data object and create a new entity with the settings
 Game.Entity.prototype.deserialize = function (world, data) {
   let entity = new Game[data.type](world, {
     pos: data.pos,
@@ -53,6 +55,7 @@ Game.Entity.prototype.deserialize = function (world, data) {
   return entity;
 };
 
+// create the entity element and place it on the map
 Game.Entity.prototype.createAndPos = function (pos) {
   this.statsEl = [];
   this.pos = pos ? pos : this.pos;
@@ -70,6 +73,7 @@ Game.Entity.prototype.createAndPos = function (pos) {
   this.applyStats();
 };
 
+// create the entity element
 Game.Entity.prototype.create = function () {
   this.statsEl = [];
   this.el = div(this.world.map.el, 'Entity ' + this.type, this.icon, {
@@ -80,6 +84,7 @@ Game.Entity.prototype.create = function () {
   this.applyStats();
 };
 
+// recreate the inline stats
 Game.Entity.prototype.applyStats = function () {
   if (this.type === 'Empty' || this.type === 'Wall') return;
   this.statsEl.forEach(e => this.el.removeChild(e));
@@ -97,6 +102,7 @@ Game.Entity.prototype.applyStats = function () {
   ];
 };
 
+// actually move this entity to a new pos
 Game.Entity.prototype.goToPos = function (pos) {
   this.pos = pos ? pos : this.pos;
   let left = (this.pos[0] * this.world.chunkSize);
@@ -120,6 +126,8 @@ Game.Entity.prototype.savePos = function () {
   this.oldPos[1] = this.pos[1];
 };
 
+// check that this entity is within the map boundaries
+// we use this to make sure we'll not move outside the map
 Game.Entity.prototype.isInsideMap = function () {
   return (
     this.pos[0] >= 0 && this.pos[1] >= 0 &&
@@ -127,19 +135,23 @@ Game.Entity.prototype.isInsideMap = function () {
   );
 };
 
+// check if this entity has moved
 Game.Entity.prototype.hasMoved = function () {
   return (this.pos[0] !== this.oldPos[0] || this.pos[1] !== this.oldPos[1]);
 };
 
+// Get entities that are not empty or this entity, by pos, if there is one
 Game.Entity.prototype.getOtherEntitiesByPos = function (pos) {
   return this.world.getEntitiesByPos(this.pos)
         .filter(e => e.type !== 'Empty' && e.name !== this.name);
 };
 
+// Get an empty entity in this pos, if there is one
 Game.Entity.prototype.getEmptyByPos = function (pos) {
   return this.world.getEntitiesByPos(this.pos).find(e => e.type === 'Empty');
 };
 
+// Find the closest empty spots on the map
 Game.Entity.prototype.getNearEmptiesByPos = function (pos) {
   // up, down, left, right
   return this.world.entities
@@ -193,6 +205,7 @@ Game.Entity.prototype.getEmptyFarthestDestByPos = function (sourcePos, destPos) 
     })[0];
 };
 
+// delete this entity element from the map
 Game.Entity.prototype.destroy = function () {
   console.log('DESTROY', this);
   this.el.parentElement.removeChild(this.el);
@@ -228,21 +241,26 @@ Game.Player.prototype.resetStats = function () {
   this.gold = 0;
 };
 
+// respond to key events
 Game.Player.prototype.keyDown = function (e) {
   switch (e.key) {
-    case 'w' || 'ArrowUp':
+    case 'w':
+    case 'ArrowUp':
       this.dir = 'up';
       this.dirCount++;
       break;
-    case 'a' || 'ArrowLeft':
+    case 'a':
+    case 'ArrowLeft':
       this.dir = 'left';
       this.dirCount++;
       break;
-    case 's' || 'ArrowDown':
+    case 's':
+    case 'ArrowDown':
       this.dir = 'down';
       this.dirCount++;
       break;
-    case 'd' || 'ArrowRight':
+    case 'd':
+    case 'ArrowRight':
       this.dir = 'right';
       this.dirCount++;
       break;
@@ -259,8 +277,15 @@ Game.Player.prototype.keyDown = function (e) {
       break;
   };
 
-  if (e.metaKey === true && (e.key === 'r' || e.key === 'm' || e.key === 'p')) {
+  if (
+
     // refresh page, minimize or print
+    (e.metaKey === true && (e.key === 'r' || e.key === 'm' || e.key === 'p')) ||
+
+    // any browser key commands
+    (e.altKey === true && e.metaKey === true)
+
+    ) {
     // pass
     return;
   }
@@ -271,6 +296,7 @@ Game.Player.prototype.keyDown = function (e) {
   // console.log('Player.keyDown', this.dirCount, e.key, e);
 };
 
+// deal with a hit by another entity, where they attempt to occupy the same pos
 Game.Player.prototype.handleHit = function (entity) {
   if (entity.type === 'Baddie') {
     // console.log({entity});
@@ -303,10 +329,12 @@ Game.Player.prototype.handleHit = function (entity) {
   // this.applyStats();
 };
 
+// attempt to take over a friendly
 Game.Player.prototype.eat = function (entity) {
   this.hp = this.hp + entity.hp;
 };
 
+// attempt to take over a baddie
 Game.Player.prototype.hit = function (entity) {
   this.hp = this.hp + entity.hp;
   if (this.hp <= 0) {
@@ -314,16 +342,19 @@ Game.Player.prototype.hit = function (entity) {
   };
 };
 
+// take over a baddie or friendly
 Game.Player.prototype.win = function (entity) {
   // TODO replace baddie with gold
   this.gold += entity.gold;
 };
 
+// lost all our HP!
 Game.Player.prototype.die = function (entity) {
   this.resetStats();
   this.world.lose(entity);
 };
 
+// non-navigational key commands
 Game.Player.prototype.act = function () {
   this.acted = false;
   if (this.action === 'inventory') {
@@ -342,6 +373,7 @@ Game.Player.prototype.act = function () {
   this.action = null;
 };
 
+// attempt to move the player
 Game.Player.prototype.move = function () {
   if (this.dir === 'up') {
     this.pos[1] = this.pos[1] - 1;
@@ -428,6 +460,7 @@ Game.Friendly.prototype.handleHit = function (entity) {
   };
 };
 
+// attempt to move the friendly
 Game.Friendly.prototype.move = function (playerPos) {
   // let nearestEmpty = this.getEmptyFarthestDestByPos(this.pos, playerPos);
   // if (nearestEmpty) {
@@ -499,6 +532,7 @@ Game.Baddie.prototype.handleHit = function (entity) {
   };
 };
 
+// attempt to move the baddie
 Game.Baddie.prototype.move = function (playerPos) {
   let nearestEmpty = this.getEmptyNearDestByPos(this.pos, playerPos);
   if (nearestEmpty) {
