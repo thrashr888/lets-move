@@ -118,6 +118,10 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 };
 
+//
+// Pseudo-Random number generator that follows a Normal or Log-Normal distribution.
+// https://gist.github.com/bluesmoon/7925696
+
 // Generate random numbers that follow a Normal distribution.
 var spareRandom = null;
 function normalRandom() {

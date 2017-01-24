@@ -28,7 +28,6 @@ describe('el', () => {
     expect(e.innerHTML).toBe('Test Content');
     expect(e.className).toBe('Test');
     expect(e.nodeName).toBe('DIV');
-    // expect(e.parentElement).toBe(document.body.nodeName);
   });
 
   it('apply styles', () => {
@@ -39,7 +38,6 @@ describe('el', () => {
 
 describe('event', () => {
   document.body.innerHTML = `<div class="click-me"></div>`;
-  var el = document.getElementsByClassName('click-me');
 
   it('should add event listener', () => {
     let callback = jest.fn();
@@ -47,7 +45,6 @@ describe('event', () => {
     document.body.click();
     expect(callback).toBeCalled();
     expect(callback.mock.calls.length).toBeGreaterThan(0);
-    // expect(dist).toBe(1.4142135623730951);
   });
 });
 

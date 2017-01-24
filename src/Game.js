@@ -1,5 +1,7 @@
 
-import { style, div, span, getPosDistance, pickRandomMove, getRandomInt, lnRandomScaled } from './helpers';
+import {
+  style, div, span, getPosDistance, pickRandomMove, getRandomInt, lnRandomScaled
+} from './helpers';
 
 var Game = {};
 var stdDev = 3;
@@ -16,7 +18,6 @@ Game.Entity = function (world, config) {
     pos: [0, 0],
     oldPos: [-1, -1],
     moved: false,
-    // size: [this.world.chunkSize, this.world.chunkSize],
     hp: 0,
     gold: 0,
   }, config);
