@@ -12,18 +12,22 @@ function style(el, styles) {
   }
 };
 
+// set up an event on an element
 function event(el, name, cb) {
   el.addEventListener(name, cb);
   return el;
 };
 
+// create a new html element and insert it into the parent element
 function el(parentEl, className=null, innerHTML=null, styles=null, type='div') {
   let el = document.createElement(type);
   if (className) {
     el.className = className;
   };
 
-  if (innerHTML) {
+  if (typeof innerHTML === 'function') {
+    el.innerHTML = innerHTML(el);
+  } else if (innerHTML) {
     el.innerHTML = innerHTML;
   };
 
@@ -56,19 +60,53 @@ function h2(parentEl, className=null, innerHTML=null, styles=null) {
   return el(parentEl, className, innerHTML, styles, 'h2');
 };
 
-function input(parentEl, className=null, placeholder=null, cb=null) {
+function h3(parentEl, className=null, innerHTML=null, styles=null) {
+  return el(parentEl, className, innerHTML, styles, 'h3');
+};
+
+function ul(parentEl, className=null, innerHTML=null, styles=null) {
+  return el(parentEl, className, innerHTML, styles, 'ul');
+};
+
+function input(parentEl, {
+  type='text', className=null, autocomplete=null, autofocus=null, autocapitalize=null,
+  name=null, placeholder=null, value=null, disabled=false, required=false,
+}) {
   var el = document.createElement('input');
+  if (type) {
+    el.type = type;
+  };
+
   if (className) {
     el.className = className;
+  };
+
+  if (name) {
+    el.name = name;
+  };
+
+  if (autocomplete) {
+    el.autocomplete = autocomplete;
+  };
+
+  if (autofocus) {
+    el.autofocus = autofocus;
+  };
+
+  if (autocapitalize) {
+    el.autocapitalize = autocapitalize;
   };
 
   if (placeholder) {
     el.placeholder = placeholder;
   };
 
-  if (cb) {
-    el.addEventListener(name, cb);
+  if (value) {
+    el.value = value;
   };
+
+  el.disabled = disabled;
+  el.required = required;
 
   parentEl.appendChild(el);
   return el;
@@ -125,11 +163,11 @@ function getRandomInt(min, max) {
 // Generate random numbers that follow a Normal distribution.
 var spareRandom = null;
 function normalRandom() {
-  var val;
-  var u;
-  var v;
-  var s;
-  var mul;
+  let val;
+  let u;
+  let v;
+  let s;
+  let mul;
 
   if (spareRandom !== null) {
     val = spareRandom;
@@ -152,7 +190,7 @@ function normalRandom() {
 
 // Generate random numbers that follow a Normal distribution but are clipped to fit within a range
 function normalRandomInRange(min, max) {
-  var val;
+  let val;
   do {
     val = normalRandom();
   } while (val < min || val > max);
@@ -162,7 +200,7 @@ function normalRandomInRange(min, max) {
 // Generate random numbers that follow a Normal
 // distribution with a given mean and standard deviation
 function normalRandomScaled(mean, stddev) {
-  var r = normalRandomInRange(-1, 1);
+  let r = normalRandomInRange(-1, 1);
   r = r * stddev + mean;
   return Math.round(r);
 }
@@ -170,7 +208,7 @@ function normalRandomScaled(mean, stddev) {
 // Generate random numbers that follow a Log-normal distribution
 // with a given geometric mean and geometric standard deviation
 function lnRandomScaled(gmean, gstddev) {
-  var r = normalRandomInRange(-1, 1);
+  let r = normalRandomInRange(-1, 1);
   r = r * Math.log(gstddev) + Math.log(gmean);
 
   // console.log('lnRandomScaled', gmean, gstddev, r, Math.round(Math.exp(r)));
@@ -178,7 +216,7 @@ function lnRandomScaled(gmean, gstddev) {
 }
 
 module.exports = {
-  style, event, el, div, span, br, h1, h2, input,
+  style, event, el, div, span, br, h1, h2, h3, ul, input,
   getPosDistance, pickRandomMove,
   getRandomArbitrary, getRandomInt,
   normalRandom, normalRandomInRange, normalRandomScaled, lnRandomScaled,

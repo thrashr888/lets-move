@@ -230,7 +230,7 @@ Game.Player = function () {
   this.resetStats();
   this.createAndPos();
 
-  document.addEventListener('keydown', this.keyDown.bind(this));
+  this.addEventListeners();
 
   // console.log(this)
 };
@@ -239,6 +239,14 @@ Game.Player.prototype = Object.create(Game.Entity.prototype);
 Game.Player.prototype.resetStats = function () {
   this.hp = 20;
   this.gold = 0;
+};
+
+Game.Player.prototype.addEventListeners = function () {
+  document.addEventListener('keydown', this.keyDown.bind(this));
+};
+
+Game.Player.prototype.removeEventListeners = function () {
+  document.removeEventListener('keydown', this.keyDown.bind(this));
 };
 
 // respond to key events
@@ -350,8 +358,22 @@ Game.Player.prototype.win = function (entity) {
 
 // lost all our HP!
 Game.Player.prototype.die = function (entity) {
-  this.resetStats();
   this.world.lose(entity);
+  this.resetStats();
+};
+
+Game.Player.prototype.hide = function () {
+  this.removeEventListeners();
+  style(this.el, {
+    visibility: 'none',
+  });
+};
+
+Game.Player.prototype.show = function () {
+  this.addEventListeners();
+  style(this.el, {
+    visibility: 'visible',
+  });
 };
 
 // non-navigational key commands

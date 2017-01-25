@@ -1,7 +1,9 @@
 
 import { style, div } from './helpers';
-import { UI } from './UI';
+import { UI, SplashScreen, EndScreen } from './UI';
 import Game from './Game';
+
+import uuidV4 from 'uuid/v4';
 
 //
 // WorldMap
@@ -191,6 +193,37 @@ WorldMap.prototype.setLevel = function (level) {
 };
 
 //
+// Leaderboard
+//
+var Leaderboard = function () {
+  this._data = [];
+  this.load();
+};
+
+Leaderboard.prototype.load = function () {
+  let lb = window.localStorage.getItem('leaderboard');
+  this._data = JSON.parse(lb) || [];
+};
+
+Leaderboard.prototype.save = function () {
+  window.localStorage.setItem('leaderboard', JSON.stringify(this._data));
+};
+
+Leaderboard.prototype.add = function (world) {
+  this._data.push({
+    id: world.id,
+    name: world.player.displayName,
+    gold: world.player.gold,
+  });
+  this._data = this._data.sort((a, b) => a.gold < b.gold).slice(0, 10);
+  this.save();
+};
+
+Leaderboard.prototype.get = function () {
+  return this._data.sort((a, b) => a.gold < b.gold);
+};
+
+//
 // World
 //
 var World = function (rootEl) {
@@ -198,14 +231,34 @@ var World = function (rootEl) {
   this.rootEl = rootEl;
   this.el = div(this.rootEl, 'World');
 
+  // get the default name
+  var playerDisplayName = window.localStorage.getItem('playerDisplayName');
+  this.playerDisplayName = playerDisplayName || 'Player1';
+
+  this.leaderboard = new Leaderboard();
+  this.hide();
+  this.splash = new SplashScreen(this, _ => {
+    this.show();
+    this.play();
+  });
+
+  // debugging
+  console.log(this);
+
+  // console.table(this.map.iconsMap);
+};
+
+World.prototype.play = function () {
+  this.id = uuidV4();
+
   // stats
   this.tickCount = 0;
   this.fps = 0;
   this.fpsLast = 0;
   this.fpsHistory = [];
   this.running = true;
-  this.ui = new UI(this);
   this.message = null;
+  this.ui = new UI(this);
 
   // map
   this.level = 1;
@@ -221,6 +274,10 @@ var World = function (rootEl) {
   this.placeAll();
   this.player = this.entities.find(e => e.type === 'Player');
 
+  // update the player's name
+  this.player.displayName = this.playerDisplayName;
+  window.localStorage.setItem('playerDisplayName', this.playerDisplayName);
+
   // handlers
   this.second.bind(this)();
   window.stop = this.stop.bind(this);
@@ -230,6 +287,8 @@ var World = function (rootEl) {
   console.log(this);
 
   // console.table(this.map.iconsMap);
+
+  this.start();
 };
 
 World.prototype.getEntitiesByType = function (type) {
@@ -363,6 +422,7 @@ World.prototype.exit = function () {
     return;
   }
 
+  this.id = uuidV4();
   this.map.setLevel(this.level);
   this.chunkSize = this.map.chunkSize;
   this.clearMap();
@@ -370,16 +430,36 @@ World.prototype.exit = function () {
   this.placeAll();
 };
 
+World.prototype.show = function () {
+  style(this.el, {
+    visibility: 'visible',
+  });
+};
+
+World.prototype.hide = function () {
+  style(this.el, {
+    visibility: 'hidden',
+  });
+};
+
 World.prototype.win = function () {
-  this.level = 0;
-  this.setMessage('You win!!!');
-  this.exit();
+  this.leaderboard.add(this);
+  this.hide();
+  this.splash = new EndScreen(this, false, _ => {
+    this.level = 0;
+    this.exit();
+    this.show();
+  });
 };
 
 World.prototype.lose = function (entity) {
-  this.level = 0;
-  this.setMessage('You were stopped by a ' + entity.type + '!');
-  this.exit();
+  this.leaderboard.add(this);
+  this.hide();
+  this.splash = new EndScreen(this, entity, _ => {
+    this.level = 0;
+    this.exit();
+    this.show();
+  });
 };
 
 module.exports = World;

@@ -5,7 +5,8 @@
   "devDependencies": {
     "csslint": "^1.0.5",
     "jscs": "^3.0.7",
-    "react-scripts": "0.8.5"
+    "react-scripts": "^0.8.5",
+    "uuid": "^3.0.1"
   },
   "dependencies": {
     "react": "^15.4.2",
