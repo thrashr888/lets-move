@@ -187,9 +187,9 @@ var EndScreen = function (world, dieBy, onClose) {
 
   let message;
   if (dieBy) {
-    message = `You were stopped by a ${dieBy.icon}!`;
+    message = `😤 You were stopped by a ${dieBy.icon}! 😂`;
   } else {
-    message = 'You Win!!!';
+    message = '🎉 You Win!!! 🏆';
   };
 
   let lb = this.world.leaderboard.get();
