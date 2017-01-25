@@ -5,6 +5,7 @@
   "devDependencies": {
     "csslint": "^1.0.5",
     "jscs": "^3.0.7",
+    "now": "^3.0.1",
     "react-scripts": "^0.8.5",
     "uuid": "^3.0.1"
   },
@@ -17,7 +18,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "lint": "jscs src"
+    "lint": "jscs src",
+    "deploy": "npm build && now build"
   },
   "eslintConfig": {
     "extends": "react-app"
