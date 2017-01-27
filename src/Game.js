@@ -1,6 +1,6 @@
 
 import {
-  style, div, span, getPosDistance, pickRandomMove, getRandomInt, lnRandomScaled
+  style, div, span, scrollToPos, getPosDistance, pickRandomMove, getRandomInt, lnRandomScaled
 } from './helpers';
 
 var Game = {};
@@ -219,9 +219,9 @@ Game.Player = function () {
   this.type = 'Player';
   Game.Entity.apply(this, arguments);
 
-  this.dir = null;
-  this.dirCount = 0;
-  this.oldDir = null;
+  this._keysPressed = {};
+  this.dir = {};
+  this.oldDir = {};
   this.moved = false;
   this.action = null;
   this.oldAction = null;
@@ -243,35 +243,31 @@ Game.Player.prototype.resetStats = function () {
 
 Game.Player.prototype.addEventListeners = function () {
   document.addEventListener('keydown', this.keyDown.bind(this));
+  document.addEventListener('keyup', this.keyUp.bind(this));
 };
 
 Game.Player.prototype.removeEventListeners = function () {
   document.removeEventListener('keydown', this.keyDown.bind(this));
+  document.removeEventListener('keyup', this.keyUp.bind(this));
+};
+
+// respond to key events
+Game.Player.prototype.keyUp = function (e) {
+  delete this._keysPressed[e.key];
 };
 
 // respond to key events
 Game.Player.prototype.keyDown = function (e) {
+  this._keysPressed[e.key] = true;
+
+  this.dir = {
+    up: this._keysPressed.w || this._keysPressed.ArrowUp,
+    left: this._keysPressed.a || this._keysPressed.ArrowLeft,
+    down: this._keysPressed.s || this._keysPressed.ArrowDown,
+    right: this._keysPressed.d || this._keysPressed.ArrowRight,
+  };
+
   switch (e.key) {
-    case 'w':
-    case 'ArrowUp':
-      this.dir = 'up';
-      this.dirCount++;
-      break;
-    case 'a':
-    case 'ArrowLeft':
-      this.dir = 'left';
-      this.dirCount++;
-      break;
-    case 's':
-    case 'ArrowDown':
-      this.dir = 'down';
-      this.dirCount++;
-      break;
-    case 'd':
-    case 'ArrowRight':
-      this.dir = 'right';
-      this.dirCount++;
-      break;
     case 'e':
       this.action = 'engage';
       break;
@@ -292,7 +288,6 @@ Game.Player.prototype.keyDown = function (e) {
 
     // any browser key commands
     (e.altKey === true && e.metaKey === true)
-
     ) {
     // pass
     return;
@@ -301,7 +296,7 @@ Game.Player.prototype.keyDown = function (e) {
   e.preventDefault();
   e.stopPropagation();
 
-  // console.log('Player.keyDown', this.dirCount, e.key, e);
+  // console.log('Player.keyDown', this.dirCount, e.key, this._keysPressed, e);
 };
 
 // deal with a hit by another entity, where they attempt to occupy the same pos
@@ -395,47 +390,56 @@ Game.Player.prototype.act = function () {
   this.action = null;
 };
 
+Game.Player.prototype.scrollTo = function () {
+  this.el.scrollIntoView({
+    behavior: 'smooth',
+  });
+  scrollToPos(this.pos, this.world);
+};
+
 // attempt to move the player
 Game.Player.prototype.move = function () {
-  if (this.dir === 'up') {
+  if (this.dir.up) {
     this.pos[1] = this.pos[1] - 1;
-  } else if (this.dir === 'left') {
+  };
+  if (this.dir.left) {
     this.pos[0] = this.pos[0] - 1;
-  } else if (this.dir === 'down') {
+  };
+  if (this.dir.down) {
     this.pos[1] = this.pos[1] + 1;
-  } else if (this.dir === 'right') {
+  };
+  if (this.dir.right) {
     this.pos[0] = this.pos[0] + 1;
   };
 
   this.moved = this.hasMoved();
   if (this.moved && this.oldPos[0] !== -1 && this.oldPos[1] !== -1) {
-    this.dirCount = 0;
-
     // Stay in the world
     if (!this.isInsideMap()) {
       this.resetPos();
       return;
     }
 
-    console.log(this.name, 'Move.Pass', this.oldPos, this.pos);
+    // console.log(this.name, 'Move.Pass', this.oldPos, this.pos);
 
     // Check if we hit any other entities
     let entities = this.getOtherEntitiesByPos(this.pos);
     if (entities.length > 0) {
-      console.log('Hit', entities);
+      // console.log('Hit', entities);
       this.handleHit(entities[0]);
     };
 
     // console.log(this.type + '.move', this.dir, this.oldPos, this.pos);
     this.goToPos();
+    this.scrollTo();
     if (this.oldPos[0] !== -1) {
       this.world.moved();
     }
   };
 
   // this.savePos();
-  this.oldDir = this.dir;
-  this.dir = null;
+  this.oldDir = Object.create(this.dir);
+  this.dir = {};
 };
 
 //
@@ -495,7 +499,7 @@ Game.Friendly.prototype.move = function (playerPos) {
     this.pos = pickRandomMove(this.pos);
   };
 
-  console.log(this.name, 'Move.Check', this.pos);
+  // console.log(this.name, 'Move.Check', this.pos);
 
   this.moved = this.hasMoved();
   if (this.moved && this.oldPos[0] !== -1 && this.oldPos[1] !== -1) {
@@ -504,11 +508,11 @@ Game.Friendly.prototype.move = function (playerPos) {
       return;
     }
 
-    console.log(this.name, 'Move.Pass', this.oldPos, this.pos);
+    // console.log(this.name, 'Move.Pass', this.oldPos, this.pos);
 
     let entities = this.getOtherEntitiesByPos(this.pos);
     if (entities.length > 0) {
-      console.log(this.name, 'Hit', entities);
+      // console.log(this.name, 'Hit', entities);
       this.handleHit(entities[0]);
     };
 
@@ -558,14 +562,14 @@ Game.Baddie.prototype.handleHit = function (entity) {
 Game.Baddie.prototype.move = function (playerPos) {
   let nearestEmpty = this.getEmptyNearDestByPos(this.pos, playerPos);
   if (nearestEmpty) {
-    console.log(this.name, 'Move.nearestEmpty',
-      playerPos, this.pos, nearestEmpty.pos, { nearestEmpty },
-      );
+    // console.log(this.name, 'Move.nearestEmpty',
+    //   playerPos, this.pos, nearestEmpty.pos, { nearestEmpty },
+    //   );
     this.pos[0] = nearestEmpty.pos[0];
     this.pos[1] = nearestEmpty.pos[1];
   }
 
-  console.log(this.name, 'Move.Check', this.pos);
+  // console.log(this.name, 'Move.Check', this.pos);
 
   this.moved = this.hasMoved();
   if (this.moved && this.oldPos[0] !== -1 && this.oldPos[1] !== -1) {
@@ -574,11 +578,11 @@ Game.Baddie.prototype.move = function (playerPos) {
       return;
     }
 
-    console.log(this.name, 'Move.Pass', this.oldPos, this.pos);
+    // console.log(this.name, 'Move.Pass', this.oldPos, this.pos);
 
     let entities = this.getOtherEntitiesByPos(this.pos);
     if (entities.length > 0) {
-      console.log(this.name, 'Hit', entities);
+      // console.log(this.name, 'Hit', entities);
       this.handleHit(entities[0]);
     };
 

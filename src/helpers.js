@@ -1,5 +1,19 @@
 
 //
+// CONSTANTS
+//
+const WORLD_MAP_COLOR = '#8bc34a';
+const UI_SPLASH_COLOR = '#363636';
+
+function setSplashBg() {
+  document.body.style.backgroundColor = UI_SPLASH_COLOR;
+};
+
+function setMapBg() {
+  document.body.style.backgroundColor = WORLD_MAP_COLOR;
+};
+
+//
 // HELPERS
 //
 function style(el, styles) {
@@ -19,7 +33,7 @@ function event(el, name, cb) {
 };
 
 // create a new html element and insert it into the parent element
-function el(parentEl, className=null, innerHTML=null, styles=null, type='div') {
+function el(parentEl, className='', innerHTML='', styles=[], type='div', attrs=[]) {
   let el = document.createElement(type);
   if (className) {
     el.className = className;
@@ -35,6 +49,14 @@ function el(parentEl, className=null, innerHTML=null, styles=null, type='div') {
     style(el, styles);
   };
 
+  if (attrs) {
+    for (let i in attrs) {
+      if (el.hasAttribute(i)) {
+        el.setAttribute(i, attrs[i]);
+      }
+    }
+  }
+
   parentEl.appendChild(el);
   return el;
 };
@@ -44,8 +66,13 @@ function div(parentEl, className=null, innerHTML=null, styles=null) {
 };
 
 function span(parentEl, className=null, innerHTML=null, styles=null) {
-  // console.log('span', arguments)
   return el(parentEl, className, innerHTML, styles, 'span');
+};
+
+function a(parentEl, href=null, className=null, innerHTML=null, styles=null) {
+  return el(parentEl, className, innerHTML, styles, 'a', {
+    href: href,
+  });
 };
 
 function br(parentEl) {
@@ -110,6 +137,16 @@ function input(parentEl, {
 
   parentEl.appendChild(el);
   return el;
+};
+
+function scrollToPos(pos, world, cb=null) {
+  let left = (pos[0] * world.chunkSize);
+  let top = (pos[1] * world.chunkSize);
+
+  let leftTo = left - (window.innerWidth / 2);
+  let topTo = top - (window.innerHeight / 2);
+
+  window.scrollTo(leftTo, topTo);
 };
 
 function getPosDistance(pos1, pos2) {
@@ -216,8 +253,9 @@ function lnRandomScaled(gmean, gstddev) {
 }
 
 module.exports = {
-  style, event, el, div, span, br, h1, h2, h3, ul, input,
-  getPosDistance, pickRandomMove,
+  setSplashBg, setMapBg,
+  style, event, el, div, span, a, br, h1, h2, h3, ul, input,
+  scrollToPos, getPosDistance, pickRandomMove,
   getRandomArbitrary, getRandomInt,
   normalRandom, normalRandomInRange, normalRandomScaled, lnRandomScaled,
 };

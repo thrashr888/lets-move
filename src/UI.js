@@ -1,5 +1,6 @@
 
-import { style, event, div, span, br, h1, h3, ul, input } from './helpers';
+import { setSplashBg, setMapBg, style, event, div, span, br, h1, h3, ul, input } from './helpers';
+import './UI.css';
 
 //
 // Stats
@@ -52,13 +53,13 @@ function Control(ui) {
   this.world = ui.world;
   this.el = div(ui.el, 'ControlUI');
   this.buttons = [
-    event(span(this.el, 'Button Up', '🔼'), 'click', this.clickDir.bind(this)('up')),
+    event(span(this.el, 'Button Up', '⬆️'), 'click', this.clickDir.bind(this)('up')),
     br(this.el),
-    event(span(this.el, 'Button Left', '◀️'), 'click', this.clickDir.bind(this)('left')),
+    event(span(this.el, 'Button Left', '⬅️'), 'click', this.clickDir.bind(this)('left')),
     span(this.el, 'UISpace', '&nbsp;'),
-    event(span(this.el, 'Button Right', '▶️'), 'click', this.clickDir.bind(this)('right')),
+    event(span(this.el, 'Button Right', '➡️'), 'click', this.clickDir.bind(this)('right')),
     br(this.el),
-    event(span(this.el, 'Button Down', '🔽'), 'click', this.clickDir.bind(this)('down')),
+    event(span(this.el, 'Button Down', '⬇️'), 'click', this.clickDir.bind(this)('down')),
 
     // br(this.el),
     // event(span(this.el, 'Button Pause', '⏯'), 'click', () => {
@@ -143,8 +144,9 @@ UI.prototype.update = function () {
 function SplashScreen(world, onClose) {
   this.world = world;
   this.onClose = onClose;
-  this.el = div(world.rootEl, 'SplashScreenUI');
 
+  setSplashBg();
+  this.el = div(world.rootEl, 'SplashScreenUI');
   this.content = [
     h1(this.el, null, '🐕 Let’s Eat! 🐈'),
     event(input(this.el, {
@@ -158,7 +160,7 @@ function SplashScreen(world, onClose) {
         value: this.world.playerDisplayName,
       }), 'input', this.onNameChange.bind(this)),
     br(this.el),
-    event(span(this.el, 'Button Play', '▶️'), 'click', this.onClickPlay.bind(this)),
+    event(span(this.el, 'Button Play', 'PLAY ▶️'), 'click', this.onClickPlay.bind(this)),
   ];
 };
 
@@ -175,6 +177,7 @@ SplashScreen.prototype.onClickPlay = function onClickPlay(e) {
 SplashScreen.prototype.close = function close() {
   this.onClose();
   this.el.parentElement.removeChild(this.el);
+  setMapBg();
 };
 
 //
@@ -193,8 +196,9 @@ var EndScreen = function (world, dieBy, onClose) {
   };
 
   let lb = this.world.leaderboard.get();
-  console.log({ lb });
+  // console.log({ lb });
 
+  setSplashBg();
   this.el = div(world.rootEl, 'EndScreenUI');
   this.content = [
     h1(this.el, null, message),
@@ -207,7 +211,7 @@ var EndScreen = function (world, dieBy, onClose) {
           <span class="gold">${player.gold}</span>
         </li>`;
     }).join('')),
-    event(span(this.el, 'Button Play', '▶️'), 'click', this.onClickPlay.bind(this)),
+    event(span(this.el, 'Button Play', 'PLAY AGAIN ▶️'), 'click', this.onClickPlay.bind(this)),
   ];
 };
 
@@ -220,6 +224,8 @@ EndScreen.prototype.onClickPlay = function onClickPlay(e) {
 EndScreen.prototype.close = function () {
   this.onClose();
   this.el.parentElement.removeChild(this.el);
+
+  setMapBg();
 };
 
 module.exports = { Stats, Control, Inventory, UI, SplashScreen, EndScreen };
