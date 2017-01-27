@@ -244,7 +244,7 @@ World.prototype.win = function () {
 };
 
 World.prototype.lose = function (entity) {
-  this.leaderboard.add(this);
+  this.leaderboard.add(this, entity);
   this.hide();
 
   setTimeout(() => {

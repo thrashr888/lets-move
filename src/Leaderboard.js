@@ -16,11 +16,12 @@ Leaderboard.prototype.save = function () {
   window.localStorage.setItem('leaderboard', JSON.stringify(this._data));
 };
 
-Leaderboard.prototype.add = function (world) {
+Leaderboard.prototype.add = function (world, dieBy) {
   this._data.push({
     id: world.id,
     name: world.player.displayName,
     gold: world.player.gold,
+    dieByType: dieBy ? dieBy.type : null,
   });
   this._data = this._data.sort((a, b) => a.gold < b.gold).slice(0, 10);
   this.save();

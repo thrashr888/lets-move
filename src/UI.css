@@ -30,6 +30,12 @@
 .EndScreenUI .Leaderboard li {
   list-style: none;
 }
+.EndScreenUI .Leaderboard li span.rank {
+  display: inline-block;
+  text-align: right;
+  text-transform: uppercase;
+  width: 3rem;
+}
 .EndScreenUI .Leaderboard li span.name {
   display: inline-block;
   text-align: left;
@@ -40,6 +46,11 @@
   display: inline-block;
   text-align: right;
   width: 3rem;
+}
+.EndScreenUI .Leaderboard li span.icon {
+  display: inline-block;
+  text-align: left;
+  width: 2rem;
 }
 .EndScreenUI .Leaderboard li.me {
   font-weight: bold;

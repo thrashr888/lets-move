@@ -390,24 +390,20 @@ Game.Player.prototype.act = function () {
   this.action = null;
 };
 
-Game.Player.prototype.scrollTo = function () {
-  this.el.scrollIntoView({
-    behavior: 'smooth',
-  });
-  scrollToPos(this.pos, this.world);
-};
-
 // attempt to move the player
 Game.Player.prototype.move = function () {
   if (this.dir.up) {
     this.pos[1] = this.pos[1] - 1;
   };
+
   if (this.dir.left) {
     this.pos[0] = this.pos[0] - 1;
   };
+
   if (this.dir.down) {
     this.pos[1] = this.pos[1] + 1;
   };
+
   if (this.dir.right) {
     this.pos[0] = this.pos[0] + 1;
   };
@@ -431,13 +427,13 @@ Game.Player.prototype.move = function () {
 
     // console.log(this.type + '.move', this.dir, this.oldPos, this.pos);
     this.goToPos();
-    this.scrollTo();
+    scrollToPos(this.pos, this.world);
     if (this.oldPos[0] !== -1) {
       this.world.moved();
     }
   };
 
-  // this.savePos();
+  this.savePos();
   this.oldDir = Object.create(this.dir);
   this.dir = {};
 };
@@ -458,6 +454,8 @@ Game.Friendly = function () {
   this.type = 'Friendly';
   Game.NPC.apply(this, arguments);
   this.displayName = 'Sheep';
+
+  // hurts a little and pays
   this.hp = 0 - lnRandomScaled(1, stdDev);
   this.gold = lnRandomScaled(this.world.level, stdDev);
   this.createAndPos();
@@ -488,6 +486,7 @@ Game.Friendly.prototype.handleHit = function (entity) {
 
 // attempt to move the friendly
 Game.Friendly.prototype.move = function (playerPos) {
+  // move closer to the player
   // let nearestEmpty = this.getEmptyFarthestDestByPos(this.pos, playerPos);
   // if (nearestEmpty) {
   //   console.log(playerPos, this.pos, nearestEmpty.pos, { nearestEmpty });
@@ -495,6 +494,7 @@ Game.Friendly.prototype.move = function (playerPos) {
   //   this.pos[1] = nearestEmpty.pos[1];
   // }
 
+  // move randomly, every 3 turns
   if (getRandomInt(0, 3) === 1) {
     this.pos = pickRandomMove(this.pos);
   };
@@ -528,8 +528,7 @@ Game.Baddie = function () {
   Game.NPC.apply(this, arguments);
   this.displayName = 'Snake';
 
-  // this.hp = 0 - getRandomInt(this.world.level / 2, this.world.level);
-  // this.gold = getRandomInt(0, this.world.level);
+  // hurts and pays
   this.hp = 0 - lnRandomScaled(this.world.level, stdDev);
   this.gold = lnRandomScaled(this.world.level, stdDev);
   this.createAndPos();
@@ -560,6 +559,7 @@ Game.Baddie.prototype.handleHit = function (entity) {
 
 // attempt to move the baddie
 Game.Baddie.prototype.move = function (playerPos) {
+  // move closer to the player
   let nearestEmpty = this.getEmptyNearDestByPos(this.pos, playerPos);
   if (nearestEmpty) {
     // console.log(this.name, 'Move.nearestEmpty',
@@ -591,24 +591,13 @@ Game.Baddie.prototype.move = function (playerPos) {
 };
 
 //
-// Wall
-//
-Game.Wall = function () {
-  this.type = 'Wall';
-  Game.Entity.apply(this, arguments);
-  this.createAndPos();
-};
-
-Game.Wall.prototype = Object.create(Game.Entity.prototype);
-
-//
 // Food
 //
 Game.Food = function () {
   this.type = 'Food';
   Game.Entity.apply(this, arguments);
 
-  // this.hp = getRandomInt(1 + this.world.level / 2, this.world.level);
+  // only heals
   this.hp = lnRandomScaled(this.world.level, stdDev);
   this.createAndPos();
 };
@@ -622,7 +611,7 @@ Game.Gold = function () {
   this.type = 'Gold';
   Game.Entity.apply(this, arguments);
 
-  // this.gold = getRandomInt(1, this.world.level);
+  // only pays
   this.gold = lnRandomScaled(this.world.level, stdDev);
   this.createAndPos();
 };
@@ -636,12 +625,23 @@ Game.Fire = function () {
   this.type = 'Fire';
   Game.Entity.apply(this, arguments);
 
-  // this.hp = 0 - getRandomInt(1, this.world.level);
+  // only hurts
   this.hp = 0 - lnRandomScaled(this.world.level, stdDev);
   this.createAndPos();
 };
 
 Game.Fire.prototype = Object.create(Game.Entity.prototype);
+
+//
+// Wall
+//
+Game.Wall = function () {
+  this.type = 'Wall';
+  Game.Entity.apply(this, arguments);
+  this.createAndPos();
+};
+
+Game.Wall.prototype = Object.create(Game.Entity.prototype);
 
 //
 // Exit

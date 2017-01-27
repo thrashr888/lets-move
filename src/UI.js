@@ -190,7 +190,7 @@ var EndScreen = function (world, dieBy, onClose) {
 
   let message;
   if (dieBy) {
-    message = `😤 You were stopped by a ${dieBy.icon}! 😂`;
+    message = `😤 You were stopped by a ${dieBy.displayName} ${dieBy.icon}! 😂`;
   } else {
     message = '🎉 You Win!!! 🏆';
   };
@@ -205,10 +205,13 @@ var EndScreen = function (world, dieBy, onClose) {
     h3(this.el, null, 'Top 10 Scores:'),
     ul(this.el, 'Leaderboard', lb.map((player, i) => {
       let me = player.id === this.world.id;
+      let icon = player.dieByType ? this.world.map.getIconByType(player.dieByType) : '';
       return `
         <li class="${me ? 'me' : ''}">
-          <span class="name">${i + 1}. ${player.name}:</span>
+          <span class="rank">${i + 1}.</span>
+          <span class="name">${player.name}</span>
           <span class="gold">${player.gold}</span>
+          <span class="icon">${icon}</span>
         </li>`;
     }).join('')),
     event(span(this.el, 'Button Play', 'PLAY AGAIN ▶️'), 'click', this.onClickPlay.bind(this)),

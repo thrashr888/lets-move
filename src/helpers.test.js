@@ -45,6 +45,9 @@ describe('event', () => {
     document.body.click();
     expect(callback).toBeCalled();
     expect(callback.mock.calls.length).toBeGreaterThan(0);
+    document.body.click();
+    document.body.click();
+    expect(callback.mock.calls.length).toBeGreaterThan(2);
   });
 });
 
