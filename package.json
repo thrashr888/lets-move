@@ -20,8 +20,8 @@
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "lint": "jscs src",
-    "deploy": "npm build && rm build/sound/*.wav && now build",
-    "mp3s": "ls public/sound/*.wav | xargs -I {} ffmpeg -i {} -acodec libmp3lame -ab 128k {}.mp3"
+    "deploy": "npm build && now build",
+    "mp3s": "ls public/sound/*.wav | xargs -I {} ffmpeg -i {} -acodec libmp3lame -ab 128k {}.mp3 && rm public/sound/*.wav"
   },
   "eslintConfig": {
     "extends": "react-app"

@@ -20,15 +20,15 @@ var World = function (rootEl) {
   var playerDisplayName = window.localStorage.getItem('playerDisplayName');
   this.playerDisplayName = playerDisplayName || 'Player1';
 
+  this.sounds = new Sounds(this);
+  this.sounds.switchBgMusic(0);
+
   this.leaderboard = new Leaderboard();
   this.hide();
   this.splash = new SplashScreen(this, _ => {
     this.show();
     this.play();
   });
-
-  this.sounds = new Sounds(this);
-  this.sounds.switchBgMusic(0);
 
   // debugging
   console.log(this);

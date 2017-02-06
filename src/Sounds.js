@@ -6,7 +6,8 @@ function Sounds(world) {
   this.master = Howler.Howler;
 
   this.setMasterVolume(0.7);
-  this.mute(false);
+  this.masterMute = window.localStorage.getItem('mute') === 'true' || false;
+  this.mute(this.masterMute);
 
   this.sounds = {};
   this.backgrounds = new Map([
@@ -66,6 +67,8 @@ function Sounds(world) {
 Sounds.prototype.mute = function (doMute) {
   this.masterMute = doMute;
   this.master.mute(this.masterMute);
+  window.localStorage.setItem('mute', this.masterMute);
+  console.log('MUTE', this.masterMute);
 };
 
 Sounds.prototype.toggleMute = function () {

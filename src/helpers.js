@@ -28,7 +28,10 @@ function style(el, styles) {
 
 // set up an event on an element
 function event(el, name, cb) {
-  el.addEventListener(name, cb);
+  if (name && cb) {
+    el.addEventListener(name, cb);
+  };
+
   return el;
 };
 
@@ -60,6 +63,17 @@ function el(parentEl, className='', innerHTML='', styles=[], type='div', attrs=[
   parentEl.appendChild(el);
   return el;
 };
+
+function muteButton(parentEl, world) {
+  let el = event(
+    span(parentEl, 'Button Mute', world.sounds.isMuted() ? '🔇' : '🔈'), 'click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      world.sounds.toggleMute();
+      el.innerHTML = world.sounds.isMuted() ? '🔇' : '🔈';
+    });
+  return el;
+}
 
 function div(parentEl, className=null, innerHTML=null, styles=null) {
   return el(parentEl, className, innerHTML, styles, 'div');
@@ -254,7 +268,7 @@ function lnRandomScaled(gmean, gstddev) {
 
 module.exports = {
   setSplashBg, setMapBg,
-  style, event, el, div, span, a, br, h1, h2, h3, ul, input,
+  style, event, muteButton, el, div, span, a, br, h1, h2, h3, ul, input,
   scrollToPos, getPosDistance, pickRandomMove,
   getRandomArbitrary, getRandomInt,
   normalRandom, normalRandomInRange, normalRandomScaled, lnRandomScaled,

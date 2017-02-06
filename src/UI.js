@@ -1,5 +1,6 @@
 
-import { setSplashBg, setMapBg, style, event, div, span, br, h1, h3, ul, input } from './helpers';
+import { setSplashBg, setMapBg, style, event,
+  muteButton, div, span, br, h1, h3, ul, input } from './helpers';
 import './UI.css';
 
 //
@@ -59,7 +60,7 @@ function Control(ui) {
     br(this.el),
     event(span(this.el, 'Button Down', '⬇️'), 'click', this.clickDir.bind(this)('down')),
     br(this.el),
-    event(span(this.el, 'Button Mute', '🔈'), 'click', this.onClickMute.bind(this)),
+    muteButton(this.el, this.world),
 
     // br(this.el),
     // event(span(this.el, 'Button Pause', '⏯'), 'click', () => {
@@ -70,13 +71,6 @@ function Control(ui) {
     //   }
     // }),
   ];
-};
-
-Control.prototype.onClickMute = function onNameChange(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  this.world.sounds.toggleMute();
-  this.buttons[8].innerHTML = this.world.sounds.isMuted() ? '🔇' : '🔈';
 };
 
 Control.prototype.clickDir = function (dir) {
@@ -136,9 +130,9 @@ function SplashScreen(world, onClose) {
         autocapitalize: 'characters',
         placeholder: 'Name?',
         value: this.world.playerDisplayName,
-      }), 'keyup', this.onNameChange.bind(this)),
+      }), 'keypress', this.onNameChange.bind(this)),
     br(this.el),
-    event(span(this.el, 'Button Mute', '🔈'), 'click', this.onClickMute.bind(this)),
+    muteButton(this.el, this.world),
     event(span(this.el, 'Button Play', 'PLAY ▶️'), 'click', this.onClickPlay.bind(this)),
   ];
 };
@@ -148,13 +142,6 @@ SplashScreen.prototype.onNameChange = function onNameChange(e) {
   if (e.code === 'Enter') {
     this.onClickPlay(e);
   };
-};
-
-SplashScreen.prototype.onClickMute = function onNameChange(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  this.world.sounds.toggleMute();
-  this.content[3].innerHTML = this.world.sounds.isMuted() ? '🔇' : '🔈';
 };
 
 SplashScreen.prototype.onClickPlay = function onClickPlay(e) {
