@@ -435,7 +435,7 @@ Game.Friendly = function () {
   this.displayName = 'Sheep';
 
   // hurts a little and pays
-  this.hp = 0 - lnRandomScaled(1, stdDev);
+  this.hp = 0 - lnRandomScaled(0, this.world.level / 3);
   this.gold = lnRandomScaled(this.world.level, stdDev);
   this.createAndPos();
 };
@@ -508,7 +508,7 @@ Game.Baddie = function () {
   this.displayName = 'Snake';
 
   // hurts and pays
-  this.hp = 0 - lnRandomScaled(this.world.level, stdDev);
+  this.hp = 0 - lnRandomScaled(this.world.level, this.world.level / 3);
   this.gold = lnRandomScaled(this.world.level, stdDev);
   this.createAndPos();
 };
