@@ -9,8 +9,8 @@ function setSplashBg() {
   document.body.style.backgroundColor = UI_SPLASH_COLOR;
 };
 
-function setMapBg() {
-  document.body.style.backgroundColor = WORLD_MAP_COLOR;
+function setMapBg(world) {
+  document.body.style.backgroundColor = world ? world.map.bgColor : WORLD_MAP_COLOR;
 };
 
 //

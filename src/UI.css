@@ -30,24 +30,24 @@
 .EndScreenUI .Leaderboard li {
   list-style: none;
 }
-.EndScreenUI .Leaderboard li span.rank {
+.EndScreenUI .Leaderboard li .rank {
   display: inline-block;
   text-align: right;
   text-transform: uppercase;
   width: 3rem;
 }
-.EndScreenUI .Leaderboard li span.name {
+.EndScreenUI .Leaderboard li .name {
   display: inline-block;
   text-align: left;
   text-transform: uppercase;
   width: 15rem;
 }
-.EndScreenUI .Leaderboard li span.gold {
+.EndScreenUI .Leaderboard li .gold {
   display: inline-block;
   text-align: right;
   width: 3rem;
 }
-.EndScreenUI .Leaderboard li span.icon {
+.EndScreenUI .Leaderboard li .icon {
   display: inline-block;
   text-align: left;
   width: 2rem;
@@ -140,13 +140,6 @@
   color: yellow;
 }
 
-.InventoryUI {
-  background-color: grey;
-  border: 2px solid black;
-  border-radius: 6px;
-  display: inline-block;
-}
-
 .ControlUI {
   background-color: black;
   border-bottom-left-radius: 1em;
@@ -193,10 +186,4 @@
   margin-right: 0.5px;
   padding: 0;
   width: 1px;
-}
-
-.Message {
-  color: yellow;
-  font-size: 160%;
-  font-weight: bold;
 }

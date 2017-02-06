@@ -20,10 +20,8 @@ Stats.prototype.update = function () {
     called
     "${this.world.map.name}"
     <br/>
-    Friendly: ${this.world.getEntitiesByType('Friendly').length},
-    Baddies: ${this.world.getEntitiesByType('Baddie').length},
-    HP: <span class="HPStat">${Math.floor(this.world.player.hp)}</span>,
-    Gold: <span class="GoldStat">${Math.floor(this.world.player.gold)}</span>
+    <span class="HPStat">${Math.floor(this.world.player.hp)}</span> Hearts and
+    <span class="GoldStat">${Math.floor(this.world.player.gold)}</span> Gold
   `;
 
   // <br/>
@@ -60,6 +58,8 @@ function Control(ui) {
     event(span(this.el, 'Button Right', '➡️'), 'click', this.clickDir.bind(this)('right')),
     br(this.el),
     event(span(this.el, 'Button Down', '⬇️'), 'click', this.clickDir.bind(this)('down')),
+    br(this.el),
+    event(span(this.el, 'Button Mute', '🔈'), 'click', this.onClickMute.bind(this)),
 
     // br(this.el),
     // event(span(this.el, 'Button Pause', '⏯'), 'click', () => {
@@ -70,6 +70,13 @@ function Control(ui) {
     //   }
     // }),
   ];
+};
+
+Control.prototype.onClickMute = function onNameChange(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  this.world.sounds.toggleMute();
+  this.buttons[8].innerHTML = this.world.sounds.isMuted() ? '🔇' : '🔈';
 };
 
 Control.prototype.clickDir = function (dir) {
@@ -96,41 +103,12 @@ Control.prototype.toggle = function () {
 };
 
 //
-// Inventory
-//
-function Inventory(ui) {
-  this.world = ui.world;
-  this.el = div(ui.el, 'InventoryUI', 'Inventory:', {
-    display: 'none',
-  });
-  this.buttons = [
-  ];
-  this.items = [];
-  this.open = false;
-};
-
-Inventory.prototype.toggle = function () {
-  if (this.open === true) {
-    style(this.el, {
-      display: 'none',
-    });
-    this.open = false;
-  } else {
-    style(this.el, {
-      display: 'block',
-    });
-    this.open = true;
-  }
-};
-
-//
 // UI
 //
 function UI(world) {
   this.world = world;
   this.el = div(world.el, 'UI');
   this.stats = new Stats(this);
-  this.inventory = new Inventory(this);
   this.control = new Control(this);
 };
 
@@ -158,14 +136,25 @@ function SplashScreen(world, onClose) {
         autocapitalize: 'characters',
         placeholder: 'Name?',
         value: this.world.playerDisplayName,
-      }), 'input', this.onNameChange.bind(this)),
+      }), 'keyup', this.onNameChange.bind(this)),
     br(this.el),
+    event(span(this.el, 'Button Mute', '🔈'), 'click', this.onClickMute.bind(this)),
     event(span(this.el, 'Button Play', 'PLAY ▶️'), 'click', this.onClickPlay.bind(this)),
   ];
 };
 
 SplashScreen.prototype.onNameChange = function onNameChange(e) {
   this.world.playerDisplayName = e.target.value;
+  if (e.code === 'Enter') {
+    this.onClickPlay(e);
+  };
+};
+
+SplashScreen.prototype.onClickMute = function onNameChange(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  this.world.sounds.toggleMute();
+  this.content[3].innerHTML = this.world.sounds.isMuted() ? '🔇' : '🔈';
 };
 
 SplashScreen.prototype.onClickPlay = function onClickPlay(e) {
@@ -177,7 +166,7 @@ SplashScreen.prototype.onClickPlay = function onClickPlay(e) {
 SplashScreen.prototype.close = function close() {
   this.onClose();
   this.el.parentElement.removeChild(this.el);
-  setMapBg();
+  setMapBg(this.world);
 };
 
 //
@@ -228,7 +217,7 @@ EndScreen.prototype.close = function () {
   this.onClose();
   this.el.parentElement.removeChild(this.el);
 
-  setMapBg();
+  setMapBg(this.world);
 };
 
-module.exports = { Stats, Control, Inventory, UI, SplashScreen, EndScreen };
+module.exports = { Stats, Control, UI, SplashScreen, EndScreen };

@@ -1,9 +1,10 @@
 
-import { style, div } from './helpers';
+import { style, div, scrollToPos, setMapBg } from './helpers';
 import { UI, SplashScreen, EndScreen } from './UI';
 import WorldMap from './WorldMap';
 import Game from './Game';
 import Leaderboard from './Leaderboard';
+import Sounds from './Sounds';
 
 import uuidV4 from 'uuid/v4';
 
@@ -26,6 +27,9 @@ var World = function (rootEl) {
     this.play();
   });
 
+  this.sounds = new Sounds(this);
+  this.sounds.switchBgMusic(0);
+
   // debugging
   console.log(this);
 
@@ -45,6 +49,7 @@ World.prototype.play = function () {
 
   // map
   this.level = 1;
+  this.sounds.switchBgMusic(this.level);
   this.map = new WorldMap(this, this.level);
   this.chunkSize = this.map.chunkSize;
   this.size = [this.map.width * this.chunkSize, this.map.height * this.chunkSize];
@@ -88,6 +93,8 @@ World.prototype.second = function () {
     return;
   };
 
+  this.getEntitiesByType('Friendly').forEach((e) => e.move(this.player.pos));
+
   this.fps = this.tickCount - this.fpsLast;
   this.fpsHistory.push(this.fps);
   if (this.fpsHistory.length > 100) {
@@ -104,7 +111,6 @@ World.prototype.tick = function () {
   };
 
   this.tickCount = this.tickCount + 1;
-  this.player.act();
   this.player.move();
   this.ui.update();
   requestAnimationFrame(this.tick.bind(this));
@@ -209,9 +215,12 @@ World.prototype.exit = function () {
   this.id = uuidV4();
   this.map.setLevel(this.level);
   this.chunkSize = this.map.chunkSize;
+  setMapBg(this);
   this.clearMap();
   this.entities = [];
   this.placeAll();
+  scrollToPos(this.player.pos, this);
+  this.sounds.switchBgMusic(this.level);
 };
 
 World.prototype.show = function () {
@@ -229,34 +238,32 @@ World.prototype.hide = function () {
 World.prototype.win = function () {
   this.leaderboard.add(this);
   this.hide();
+  this.sounds.switchBgMusic(0);
 
   setTimeout(() => {
     window.scrollTo(0, 0);
   });
-  console.log('1 window.scrollTo(0, 0);')
   this.splash = new EndScreen(this, false, _ => {
     this.level = 0;
     this.exit();
     this.show();
     window.scrollTo(0, 0);
-    console.log('2 window.scrollTo(0, 0);')
   });
 };
 
 World.prototype.lose = function (entity) {
   this.leaderboard.add(this, entity);
   this.hide();
+  this.sounds.switchBgMusic(0);
 
   setTimeout(() => {
     window.scrollTo(0, 0);
   });
-  console.log('3 window.scrollTo(0, 0);')
   this.splash = new EndScreen(this, entity, _ => {
     this.level = 0;
     this.exit();
     this.show();
     window.scrollTo(0, 0);
-    console.log('4 window.scrollTo(0, 0);')
   });
 };
 

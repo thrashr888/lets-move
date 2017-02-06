@@ -267,20 +267,6 @@ Game.Player.prototype.keyDown = function (e) {
     right: this._keysPressed.d || this._keysPressed.ArrowRight,
   };
 
-  switch (e.key) {
-    case 'e':
-      this.action = 'engage';
-      break;
-    case 'i':
-      this.action = 'inventory';
-      break;
-    case 'c':
-      this.action = 'control';
-      break;
-    default:
-      break;
-  };
-
   if (
 
     // refresh page, minimize or print
@@ -305,27 +291,34 @@ Game.Player.prototype.handleHit = function (entity) {
     // console.log({entity});
     this.hit(entity);
     this.win(entity);
+    this.world.sounds.playOnce('hit');
     entity.destroy();
     this.resetPos();
   } else if (entity.type === 'Friendly') {
     // console.log({entity});
     this.hit(entity);
     this.win(entity);
+    this.world.sounds.playOnce('hit');
     entity.destroy();
     this.resetPos();
   } else if (entity.type === 'Food') {
     // console.log({entity});
     this.eat(entity);
+    this.world.sounds.playOnce('bite');
     entity.destroy();
   } else if (entity.type === 'Gold') {
     this.win(entity);
+    this.world.sounds.playOnce('gold');
     entity.destroy();
   } else if (entity.type === 'Wall') {
+    this.world.sounds.playOnce('wall');
     this.resetPos();
   } else if (entity.type === 'Fire') {
     this.hit(entity);
+    this.world.sounds.playOnce('fire');
     this.resetPos();
   } else if (entity.type === 'Exit') {
+    this.world.sounds.playOnce('win');
     this.world.exit();
   };
 
@@ -371,25 +364,6 @@ Game.Player.prototype.show = function () {
   });
 };
 
-// non-navigational key commands
-Game.Player.prototype.act = function () {
-  this.acted = false;
-  if (this.action === 'inventory') {
-    this.world.ui.inventory.toggle();
-    this.acted = true;
-  } else if (this.action === 'control') {
-    this.world.ui.control.toggle();
-    this.acted = true;
-  } else if (this.action === 'engage') {
-    let entity = this.world.findByDir(this.pos, this.oldDir);
-    this.world.engage(entity);
-    this.acted = true;
-  };
-
-  this.oldAction = this.action;
-  this.action = null;
-};
-
 // attempt to move the player
 Game.Player.prototype.move = function () {
   if (this.dir.up) {
@@ -426,8 +400,13 @@ Game.Player.prototype.move = function () {
     };
 
     // console.log(this.type + '.move', this.dir, this.oldPos, this.pos);
+
+    if (this.hasMoved()) {
+      this.world.sounds.playOnce('move');
+      scrollToPos(this.pos, this.world);
+    };
+
     this.goToPos();
-    scrollToPos(this.pos, this.world);
     if (this.oldPos[0] !== -1) {
       this.world.moved();
     }

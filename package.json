@@ -4,8 +4,9 @@
   "private": true,
   "devDependencies": {
     "csslint": "^1.0.5",
+    "howler": "^2.0.2",
     "jscs": "^3.0.7",
-    "now": "^3.0.1",
+    "now": "^4.1.2",
     "react-scripts": "^0.8.5",
     "uuid": "^3.0.1"
   },
@@ -19,7 +20,8 @@
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "lint": "jscs src",
-    "deploy": "npm build && now build"
+    "deploy": "npm build && rm build/sound/*.wav && now build",
+    "mp3s": "ls public/sound/*.wav | xargs -I {} ffmpeg -i {} -acodec libmp3lame -ab 128k {}.mp3"
   },
   "eslintConfig": {
     "extends": "react-app"
