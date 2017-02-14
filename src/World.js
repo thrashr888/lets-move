@@ -76,8 +76,6 @@ World.prototype.play = function () {
   console.log(this);
 
   // console.table(this.map.iconsMap);
-
-  this.start();
 };
 
 World.prototype.getEntitiesByType = function (type) {
@@ -128,6 +126,7 @@ World.prototype.stop = function () {
 
 World.prototype.start = function () {
   this.running = true;
+  scrollToPos(this.player.pos, this);
   this.second();
   this.tick();
   console.log('START');
@@ -147,12 +146,23 @@ World.prototype.placeAll = function () {
     row.forEach((col, c) => {
       // console.log(c, col)
       let type = this.map.types[col];
+
+      if (type !== 'Wall' && type !== 'Floor') {
+        let entity = new Game.Floor(this, {
+          pos: [c, r],
+          name: ['Floor', c, r].join(':'),
+          icon: this.map.icons[1],
+        });
+        this.entities.push(entity);
+      };
+
       if (type === 'Player' && this.player) {
         this.player.createAndPos([c, r]);
         return;
       };
 
       // console.log(type, 'FOUND', r, c);
+
       let entity = new Game[type](this, {
         pos: [c, r],
         name: [type, c, r].join(':'),
@@ -247,7 +257,7 @@ World.prototype.win = function () {
     this.level = 0;
     this.exit();
     this.show();
-    window.scrollTo(0, 0);
+    // window.scrollTo(0, 0);
   });
 };
 
@@ -263,7 +273,7 @@ World.prototype.lose = function (entity) {
     this.level = 0;
     this.exit();
     this.show();
-    window.scrollTo(0, 0);
+    // window.scrollTo(0, 0);
   });
 };
 

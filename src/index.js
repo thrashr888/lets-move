@@ -10,4 +10,4 @@ import './index.css';
 // );
 
 var w = new World(document.getElementById('root'));
-w.tick();
+w.start();

@@ -30,19 +30,8 @@ Stats.prototype.update = function () {
   // Pos: "${this.world.player.oldPos}",
   // FPS: ${this.world.fps}
   // <br/>
-  // <span class="History">${this.world.fpsHistory.map(
-  //   v => `<span style="height:${(v / 2.5)}px">&nbsp;</span>`
-  //   ).join('')}</span>
   // ${this.world.message ? `<div class="Message">${this.world.message}</div>` : ''}
-};
-
-Stats.prototype.renderHistory = function () {
-  let out = [];
-  for (let v of this.world.fpsHistory) {
-    out.push(`<span style="height: ${(v / 2.5)}px">&nbsp;</span>`);
-  };
-
-  return out.join('');
+  // drawSimpleChart(this.el, this.world.fpsHistory, 100, 18);
 };
 
 //
@@ -172,7 +161,6 @@ var EndScreen = function (world, dieBy, onClose) {
   };
 
   let lb = this.world.leaderboard.get();
-  // console.log({ lb });
 
   setSplashBg();
   this.el = div(world.rootEl, 'EndScreenUI');

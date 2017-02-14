@@ -62,13 +62,14 @@ Game.Entity.prototype.createAndPos = function (pos) {
   let left = (this.pos[0] * this.world.chunkSize);
   let top = (this.pos[1] * this.world.chunkSize);
   this.el = div(this.world.map.el, 'Entity ' + this.type, this.icon, {
-    fontSize: this.world.chunkSize,
+    fontSize: Math.floor(this.world.chunkSize * 1.075),
     width: this.world.chunkSize,
     height: this.world.chunkSize,
     left: left,
     top: top,
     animationDelay: Math.floor(left + 1 * top + 1 * 1000 * Math.random()) + 'ms',
   });
+  this.el.setAttribute('data-pos', this.pos);
   this.savePos();
   this.applyStats();
 };
@@ -86,7 +87,7 @@ Game.Entity.prototype.create = function () {
 
 // recreate the inline stats
 Game.Entity.prototype.applyStats = function () {
-  if (this.type === 'Empty' || this.type === 'Wall') return;
+  if (this.type === 'Empty' || this.type === 'Floor' || this.type === 'Wall') return;
   this.statsEl.forEach(e => this.el.removeChild(e));
   this.statsEl = [
     span(this.el, 'Stat HP', this.hp, {
@@ -143,19 +144,19 @@ Game.Entity.prototype.hasMoved = function () {
 // Get entities that are not empty or this entity, by pos, if there is one
 Game.Entity.prototype.getOtherEntitiesByPos = function (pos) {
   return this.world.getEntitiesByPos(this.pos)
-        .filter(e => e.type !== 'Empty' && e.name !== this.name);
+        .filter(e => e.type !== 'Empty' && e.type !== 'Floor' && e.name !== this.name);
 };
 
 // Get an empty entity in this pos, if there is one
 Game.Entity.prototype.getEmptyByPos = function (pos) {
-  return this.world.getEntitiesByPos(this.pos).find(e => e.type === 'Empty');
+  return this.world.getEntitiesByPos(this.pos).find(e => e.type === 'Empty' || e.type === 'Floor');
 };
 
 // Find the closest empty spots on the map
 Game.Entity.prototype.getNearEmptiesByPos = function (pos) {
   // up, down, left, right
   return this.world.entities
-    .filter(e => e.type === 'Empty')
+    .filter(e => e.type === 'Empty' || e.type === 'Floor')
     .filter((e) => (e.pos[0] === pos[0] - 1 && e.pos[1] === pos[1]) ||
         (e.pos[0] === pos[0] + 1 && e.pos[1] === pos[1]) ||
         (e.pos[1] === pos[1] - 1 && e.pos[0] === pos[0]) ||
@@ -267,6 +268,11 @@ Game.Player.prototype.keyDown = function (e) {
     right: this._keysPressed.d || this._keysPressed.ArrowRight,
   };
 
+  if (this.dir.up || this.dir.left || this.dir.down || this.dir.right) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
   if (
 
     // refresh page, minimize or print
@@ -278,9 +284,6 @@ Game.Player.prototype.keyDown = function (e) {
     // pass
     return;
   }
-
-  e.preventDefault();
-  e.stopPropagation();
 
   // console.log('Player.keyDown', this.dirCount, e.key, this._keysPressed, e);
 };
@@ -642,5 +645,16 @@ Game.Empty = function () {
 };
 
 Game.Empty.prototype = Object.create(Game.Entity.prototype);
+
+//
+// Floor
+//
+Game.Floor = function () {
+  this.type = 'Floor';
+  Game.Entity.apply(this, arguments);
+  this.createAndPos();
+};
+
+Game.Floor.prototype = Object.create(Game.Entity.prototype);
 
 module.exports = Game;

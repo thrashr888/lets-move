@@ -54,7 +54,7 @@ function el(parentEl, className='', innerHTML='', styles=[], type='div', attrs=[
 
   if (attrs) {
     for (let i in attrs) {
-      if (el.hasAttribute(i)) {
+      if ({}.hasOwnProperty.call(attrs, i)) {
         el.setAttribute(i, attrs[i]);
       }
     }
@@ -266,10 +266,35 @@ function lnRandomScaled(gmean, gstddev) {
   return Math.round(Math.exp(r));
 }
 
+function drawSimpleChart(parentEl, numbers, width, height) {
+  let canvas = el(parentEl, 'Chart', null, null, 'canvas', {
+    width: width + 'px',
+    height: height + 'px',
+  });
+
+  if (canvas.getContext) {
+    var ctx = canvas.getContext('2d');
+    ctx.beginPath();
+
+    for (let i in numbers) {
+      if (!numbers.hasOwnProperty(i)) continue;
+      let n = numbers[i];
+      ctx.moveTo(i, 0);
+      ctx.lineTo(i, n);
+    };
+
+    ctx.strokeStyle = '#FF0000';
+    ctx.stroke();
+  };
+
+  return el;
+}
+
 module.exports = {
   setSplashBg, setMapBg,
   style, event, muteButton, el, div, span, a, br, h1, h2, h3, ul, input,
   scrollToPos, getPosDistance, pickRandomMove,
   getRandomArbitrary, getRandomInt,
   normalRandom, normalRandomInRange, normalRandomScaled, lnRandomScaled,
+  drawSimpleChart,
 };
