@@ -67,7 +67,7 @@ Control.prototype.clickDir = function (dir) {
   return function (e) {
     e.preventDefault();
     e.stopPropagation();
-    _this.world.player.dir = dir;
+    _this.world.player[dir] = true;
   };
 };
 

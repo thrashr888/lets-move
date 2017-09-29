@@ -23,6 +23,7 @@ var World = function (rootEl) {
   this.sounds = new Sounds(this);
   this.sounds.switchBgMusic(0);
 
+  this.fpsHistory = [];
   this.leaderboard = new Leaderboard();
   this.hide();
   this.splash = new SplashScreen(this, _ => {
@@ -91,7 +92,9 @@ World.prototype.second = function () {
     return;
   };
 
-  this.getEntitiesByType('Friendly').forEach((e) => e.move(this.player.pos));
+  if (this.entities && this.player) {
+    this.getEntitiesByType('Friendly').forEach((e) => e.move(this.player.pos));
+  };
 
   this.fps = this.tickCount - this.fpsLast;
   this.fpsHistory.push(this.fps);
@@ -109,8 +112,14 @@ World.prototype.tick = function () {
   };
 
   this.tickCount = this.tickCount + 1;
-  this.player.move();
-  this.ui.update();
+  if (this.player) {
+    this.player.move();
+  };
+
+  if (this.ui) {
+    this.ui.update();
+  }
+
   requestAnimationFrame(this.tick.bind(this));
 };
 
@@ -126,7 +135,9 @@ World.prototype.stop = function () {
 
 World.prototype.start = function () {
   this.running = true;
-  scrollToPos(this.player.pos, this);
+  if (this.player) {
+    scrollToPos(this.player.pos, this);
+  }
   this.second();
   this.tick();
   console.log('START');
